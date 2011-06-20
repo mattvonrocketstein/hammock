@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>hammock: gmaps</title>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAPDUET0Qt7p2VcSk6JNU1sBSM5jMcmVqUpI7aqV44cW1cEECiThQYkcZUPRJn9vy_TWxWvuLoOfSFBw" type="text/javascript"></script>
+  </head>
+  <body onunload="GUnload()">
+
+    <h3> Hammock </h3>
+    <!-- the div where the map will be displayed -->
+
+    <div id="map" style="width: 800px; height: 450px"></div>
+
+    <!-- fail nicely if the browser has no Javascript -->
+    <noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
+      However, it seems JavaScript is either disabled or not supported by your browser.
+      To view Google Maps, enable JavaScript by changing your browser options, and then
+      try again.
+    </noscript>
+
+
+
+
+    <script type="text/javascript">
+    //<![CDATA[
+
+    if (GBrowserIsCompatible()) {
+
+      function createMarker(point,html) {
+        var marker = new GMarker(point);
+        GEvent.addListener(marker, "click", function() {
+          marker.openInfoWindowHtml(html);
+        });
+
+        // The new marker "mouseover" listener
+        GEvent.addListener(marker,"mouseover", function() {
+          marker.openInfoWindowHtml(html);
+        });
+
+        return marker;
+      }
+
+      var map = new GMap2(document.getElementById("map"));
+      map.addControl(new GLargeMapControl());
+      map.addControl(new GMapTypeControl());
+      map.setCenter(new GLatLng(43.907787,-79.359741), 9);
+
+      var marker = createMarker(new GLatLng(43.91892,-78.89231),'Some stuff to display in the<br>Second Info Window')
+      map.addOverlay(marker);
+    }
+
+
+    else {
+      alert("Sorry, the Google Maps API is not compatible with this browser");
+    }
+
+    // This Javascript is based on code provided by the
+    // Community Church Javascript Team
+    // http://www.bisphamchurch.org.uk/
+    // http://econym.org.uk/gmap/
+
+    //]]>
+    </script>
+
+  </body>
+
+</html>
