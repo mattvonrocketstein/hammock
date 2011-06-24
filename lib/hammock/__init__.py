@@ -8,30 +8,32 @@ from flask import Flask, request, session, url_for, redirect
 
 from werkzeug import check_password_hash, generate_password_hash
 
-## Begin flask setup
+from hammock._math import box, calculate_center
 from hammock.data import *
 
+## Begin flask setup
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 ## Begin flask plumbing
-@app.before_request
+
 def before_request():
     """ Make sure we are connected to the database
         each request and look up the current user
         so that we know he's there.
     """
-    #g.db = connect_db()
     g.user = None
     if 'user_id' in session:
         print 'logged in'
         g.user='superuser'
 
-@app.after_request
 def after_request(response):
     """ nothing to do here so far. """
     return response
+
+before_request = app.before_request(before_request)
+after_request = app.after_request(after_request)
 
 @app.route('/')
 def slash():
@@ -50,31 +52,34 @@ def slash():
         print '-'*10,_id, obj['coords']
         lat, lon = obj['coords'].split(',')
         label = obj.get('label', 'label is empty')
+        if g.user:
+            js = "$.post('/remove',{id:'" + _id + "'});window.location='/';"
+            js = "do_remove(\\x27"+_id+"\\x27);"#.replace("'",'\\x27')
+            #js = """alert('"""+_id+"""');""".replace("'",r'\\x27')
+            control  = '''<br/><span><a href="javascript:{js}">remove this point</a></span>'''
+            control  = control.format(js=js)
+            label   += control
         points.append([lat,lon,label])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
-    return render_template('index.html', points=points,
-                           center_lat=center_lat,#'43.907787',
-                           center_lon=center_lon,#'-79.359741',
-                           minLat=minLat, minLng=minLng, maxLat=maxLat, maxLng=maxLng,
+    return render_template('index.html',
+                           points=points,
+                           center_lat=center_lat,
+                           center_lon=center_lon,
+                           minLat=minLat, minLng=minLng,
+                           maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom)
 
-def box(points):
-    points = [ [p[0], p[1]] for p in points] # drop label
-    points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
-    lats = [p[0] for p in points]
-    lons = [p[1] for p in points]
-    return min(lats), min(lons), max(lats), max(lons)
 
-def calculate_center(points):
-    points = [ [p[0], p[1]] for p in points] # drop label
-    points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
-    lats = [p[0] for p in points]
-    lons = [p[1] for p in points]
-    lat = max(lats) + min(lats)/2.0
-    lon = max(lons) + min(lons)/2.0
-    return lat,lon
 
+@app.route('/remove',methods=['POST'])
+def remove():
+    if not g.user:
+        return redirect('/login')
+    if request.method=='POST':
+        print 'removing',request.form['id']
+        del couch['coordinates'][request.form['id']]
+        return redirect('/')
 
 @app.route('/set', methods=['GET', 'POST'])
 def set_location():
@@ -82,7 +87,6 @@ def set_location():
     if not g.user:
         return redirect('/login')
     if request.method == 'POST':
-        print 'YAYAYAYA',request.form['coords']
         db = couch['coordinates']
         date_str = str(datetime.datetime.now())
         data = {'coords':request.form['coords'].replace('(','').replace(')',''),
