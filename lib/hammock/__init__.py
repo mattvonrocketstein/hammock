@@ -2,12 +2,12 @@
 """
 """
 
-import time
-from contextlib import closing
-from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash
+from flask import render_template, abort, g, flash
+from flask import Flask, request, session, url_for, redirect
+
 from werkzeug import check_password_hash, generate_password_hash
 
+## Begin flask setup
 DEBUG       = True
 SERVER      = 'http://dojo.robotninja.org:5984/'
 CREDENTIALS = ('matt', 'lemmein')
@@ -16,11 +16,14 @@ center_zoom=6
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
+## Begin flask plumbing
 @app.before_request
 def before_request():
-    """Make sure we are connected to the database each request and look
-    up the current user so that we know he's there.
+    """ Make sure we are connected to the database
+        each request and look up the current user
+        so that we know he's there.
     """
     #g.db = connect_db()
     g.user = None
@@ -30,22 +33,18 @@ def before_request():
 
 @app.after_request
 def after_request(response):
-    """Closes the database again at the end of the request."""
-    #g.db.close()
+    """ nothing to do here so far. """
     return response
-
 
 @app.route('/')
 def slash():
-    """Shows a users timeline or if no user is logged in it will
-    redirect to the public timeline.  This timeline shows the user's
-    messages as well as all the messages of followed users.
+    """ the homepage:
+        renders all geocoordinates in coordinate database,
+        along with labels.
     """
     db = couch['coordinates']
-    def coordinates():
-        return filter(lambda x: not x.startswith('_design'), db)
     points=[]
-    for _id in coordinates():
+    for _id in coordinates(db):
         obj = db[_id]
         if 'coords' not in obj:
             print 'dirty entry in coordinates database.. removing it'
@@ -79,7 +78,9 @@ def logout():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Logs the user in."""
+    """ Logs the user in.
+        TODO: add back hashing after everything else is working
+    """
     if g.user:
         print g,g.user
         return redirect('/')
@@ -105,19 +106,20 @@ def logout():
     session.pop('user_id', None)
     return redirect('/')
 
-def list_db(item, db):
-    if not item.startswith('_design'): #skip design-docs
-        print item, db[item]
-
+## Begin couch-specific stuff
 def setup():
     import couchdb
     global couch
     couch = couchdb.Server(SERVER)
     couch.resource.credentials = CREDENTIALS
 
+def coordinates(db):
+    return filter(lambda x: not x.startswith('_design'), db)
+
 setup()
 db = couch['coordinates']
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+
 
 if __name__=='__main__':
+    # hook for to clean up the database by hand
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
