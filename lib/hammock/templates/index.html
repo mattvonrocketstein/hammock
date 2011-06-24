@@ -44,9 +44,10 @@
       map.addControl(new GLargeMapControl());
       map.addControl(new GMapTypeControl());
       map.setCenter(new GLatLng(43.907787,-79.359741), 9);
-
-      var marker = createMarker(new GLatLng(43.91892,-78.89231),'Some stuff to display in the<br>Second Info Window')
+      {% for lat,lon,label in points %}
+      var marker = createMarker(new GLatLng({{lat}},{{lon}}),'{{label}}')
       map.addOverlay(marker);
+      {%endfor%}
     }
 
 

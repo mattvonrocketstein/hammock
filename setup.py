@@ -26,7 +26,7 @@ except ImportError:
 if have_setuptools:
     add_keywords = dict( entry_points = \
                          { 'console_scripts': \
-                           ['hammock = hammock.bin.hammock:entry', ]
+                           ['hammock = hammock.bin._hammock:entry', ]
                          }, )
 else:
     add_keywords = dict( scripts = ['hammock'], )
