@@ -8,16 +8,13 @@ from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, g, flash
 from werkzeug import check_password_hash, generate_password_hash
 
-DEBUG = True
-SECRET_KEY = 'development key'
+DEBUG       = True
+SERVER      = 'http://dojo.robotninja.org:5984/'
+CREDENTIALS = ('matt', 'lemmein')
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 #app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
-
-def init_db():
-    """Creates the database tables."""
-    return
 
 def get_user_id(username):
     """Convenience method to look up the id for a username."""
@@ -53,8 +50,22 @@ def slash():
     """
     #if not g.user:
     #    return redirect(url_for('public_timeline'))
-    go()
-    return render_template('index.html', points=[43.91892,-78.89231])
+    db = couch['coordinates']
+    def coordinates():
+        return filter(lambda x: not x.startswith('_design'), db)
+    points=[]
+    for _id in coordinates():
+        obj = db[_id]
+        if 'coords' not in obj:
+            print 'dirty entry in coordinates database.. removing it'
+            #del db[_id]
+            continue
+        print '-'*10,_id, obj['coords']
+        lat,lon = obj['coords'].split(',')
+        label = obj.get('label','sandwich')
+        points.append([lat,lon,label])
+
+    return render_template('index.html', points=points)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -113,16 +124,18 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('/'))
 
+def list_db(item, db):
+    if not item.startswith('_design'): #skip design-docs
+        print item, db[item]
 
-def go():
+def setup():
     import couchdb
-    couch = couchdb.Server('http://dojo.robotninja.org:5984/')
-    couch.resource.credentials = ('matt', 'lemmein')
-    db = couch['coordinates']
-    for item in db:
-        if not item.startswith('_design'): #skip design-docs
-            print item, db[item]
-            if not db[item]:
-                del db[item]
-if __name__ == '__main__':
-    pass#app.run()
+    global couch
+    couch = couchdb.Server(SERVER)
+    couch.resource.credentials = CREDENTIALS
+
+setup()
+db = couch['coordinates']
+
+if __name__=='__main__':
+    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
