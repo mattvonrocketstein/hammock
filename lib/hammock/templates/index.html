@@ -1,27 +1,25 @@
 {% extends "layout.html" %}
 {% block title %}Sign In{% endblock %}
 {% block body %}
-  <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAPDUET0Qt7p2VcSk6JNU1sBSM5jMcmVqUpI7aqV44cW1cEECiThQYkcZUPRJn9vy_TWxWvuLoOfSFBw" type="text/javascript"></script>
-  <h2>Where's matt?</h2>
-  {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
-    <center><div id="map" style="width:650px; height: 450px"></div></center>
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAPDUET0Qt7p2VcSk6JNU1sBSM5jMcmVqUpI7aqV44cW1cEECiThQYkcZUPRJn9vy_TWxWvuLoOfSFBw" type="text/javascript"></script>
+{% block subtitle %}
+<h2>Where's matt?</h2>
+{% endblock %}
+{% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
 
-    <!-- fail nicely if the browser has no Javascript -->
-    <noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
-      However, it seems JavaScript is either disabled or not supported by your browser.
-      To view Google Maps, enable JavaScript by changing your browser options, and then
-      try again.
-    </noscript>
+<center><div id="map" style="width:650px; height: 450px"></div></center>
 
+<!-- fail nicely if the browser has no Javascript -->
+<noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
+  However, it seems JavaScript is either disabled or not supported by your browser.
+  To view Google Maps, enable JavaScript by changing your browser options, and then
+  try again.
+</noscript>
 
-
-
-    <script type="text/javascript">
-
-    //<![CDATA[
+<script type="text/javascript">
+  //<![CDATA[
     {% include "map_js.js" %}
-
     //]]>
-    </script>
+</script>
 
 {% endblock %}
