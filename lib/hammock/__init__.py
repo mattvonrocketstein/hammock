@@ -2,17 +2,14 @@
 """
 """
 
+import datetime
 from flask import render_template, abort, g, flash
 from flask import Flask, request, session, url_for, redirect
 
 from werkzeug import check_password_hash, generate_password_hash
 
 ## Begin flask setup
-DEBUG       = True
-SERVER      = 'http://dojo.robotninja.org:5984/'
-CREDENTIALS = ('matt', 'lemmein')
-
-center_zoom=6
+from hammock.data import *
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -54,22 +51,51 @@ def slash():
         lat, lon = obj['coords'].split(',')
         label = obj.get('label', 'label is empty')
         points.append([lat,lon,label])
-
+    center_lat,center_lon = calculate_center(points)
+    minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html', points=points,
-                           center_lat='43.907787',
-                           center_lon='-79.359741',
+                           center_lat=center_lat,#'43.907787',
+                           center_lon=center_lon,#'-79.359741',
+                           minLat=minLat, minLng=minLng, maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom)
+
+def box(points):
+    points = [ [p[0], p[1]] for p in points] # drop label
+    points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
+    lats = [p[0] for p in points]
+    lons = [p[1] for p in points]
+    return min(lats), min(lons), max(lats), max(lons)
+
+def calculate_center(points):
+    points = [ [p[0], p[1]] for p in points] # drop label
+    points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
+    lats = [p[0] for p in points]
+    lons = [p[1] for p in points]
+    lat = max(lats) + min(lats)/2.0
+    lon = max(lons) + min(lons)/2.0
+    return lat,lon
+
+
 @app.route('/set', methods=['GET', 'POST'])
 def set_location():
     """ sets a location """
     if not g.user:
         return redirect('/login')
+    if request.method == 'POST':
+        print 'YAYAYAYA',request.form['coords']
+        db = couch['coordinates']
+        date_str = str(datetime.datetime.now())
+        data = {'coords':request.form['coords'].replace('(','').replace(')',''),
+                'tag':date_str,
+                }
+        db[date_str] = data
+        # this is ignored since it's posted with ajax..
+        return redirect('/')
     return render_template('set.html',
                            center_lat='43.907787',
                            center_lon='-79.359741',
                            center_zoom=center_zoom
                            )
-
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -117,8 +143,6 @@ def coordinates(db):
     return filter(lambda x: not x.startswith('_design'), db)
 
 setup()
-db = couch['coordinates']
-
 
 if __name__=='__main__':
     # hook for to clean up the database by hand
