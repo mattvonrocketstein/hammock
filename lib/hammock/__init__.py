@@ -48,8 +48,6 @@ def slash():
     redirect to the public timeline.  This timeline shows the user's
     messages as well as all the messages of followed users.
     """
-    #if not g.user:
-    #    return redirect(url_for('public_timeline'))
     db = couch['coordinates']
     def coordinates():
         return filter(lambda x: not x.startswith('_design'), db)
@@ -61,30 +59,38 @@ def slash():
             #del db[_id]
             continue
         print '-'*10,_id, obj['coords']
-        lat,lon = obj['coords'].split(',')
-        label = obj.get('label','sandwich')
+        lat, lon = obj['coords'].split(',')
+        label = obj.get('label', 'label is empty')
         points.append([lat,lon,label])
 
     return render_template('index.html', points=points)
+
+@app.route('/set', methods=['GET', 'POST'])
+def set_location():
+    """ sets a location """
+    if not g.user:
+        return redirect('/login')
+    return render_template('set.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Logs the user in."""
     if g.user:
-        return redirect(url_for('timeline'))
+        print g,g.user
+        return redirect('/')
     error = None
     if request.method == 'POST':
-        user = query_db('''select * from user where
-            username = ?''', [request.form['username']], one=True)
+        user = dict(user_id='superuser',pw_hash='test')
         if user is None:
             error = 'Invalid username'
-        elif not check_password_hash(user['pw_hash'],
-                                     request.form['password']):
+        elif not user['pw_hash']==request.form['password']:
+        #elif not check_password_hash(user['pw_hash'],
+        #                             request.form['password']):
             error = 'Invalid password'
         else:
             flash('You were logged in')
             session['user_id'] = user['user_id']
-            return redirect(url_for('timeline'))
+            return redirect('/')
     return render_template('login.html', error=error)
 
 
@@ -92,7 +98,7 @@ def login():
 def register():
     """Registers the user."""
     if g.user:
-        return redirect(url_for('timeline'))
+        return redirect('/')
     error = None
     if request.method == 'POST':
         if not request.form['username']:
@@ -136,6 +142,7 @@ def setup():
 
 setup()
 db = couch['coordinates']
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 if __name__=='__main__':
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()

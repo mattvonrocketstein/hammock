@@ -1,15 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-  <head>
-    <title>hammock: gmaps</title>
-    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAPDUET0Qt7p2VcSk6JNU1sBSM5jMcmVqUpI7aqV44cW1cEECiThQYkcZUPRJn9vy_TWxWvuLoOfSFBw" type="text/javascript"></script>
-  </head>
-  <body onunload="GUnload()">
-
-    <h3> Hammock </h3>
-    <!-- the div where the map will be displayed -->
-
-    <div id="map" style="width: 800px; height: 450px"></div>
+{% extends "layout.html" %}
+{% block title %}Sign In{% endblock %}
+{% block body %}
+  <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAPDUET0Qt7p2VcSk6JNU1sBSM5jMcmVqUpI7aqV44cW1cEECiThQYkcZUPRJn9vy_TWxWvuLoOfSFBw" type="text/javascript"></script>
+  <h2>Where's matt?</h2>
+  {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
+    <center><div id="map" style="width:650px; height: 450px"></div></center>
 
     <!-- fail nicely if the browser has no Javascript -->
     <noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
@@ -22,47 +17,11 @@
 
 
     <script type="text/javascript">
+
     //<![CDATA[
-
-    if (GBrowserIsCompatible()) {
-
-      function createMarker(point,html) {
-        var marker = new GMarker(point);
-        GEvent.addListener(marker, "click", function() {
-          marker.openInfoWindowHtml(html);
-        });
-
-        // The new marker "mouseover" listener
-        GEvent.addListener(marker,"mouseover", function() {
-          marker.openInfoWindowHtml(html);
-        });
-
-        return marker;
-      }
-
-      var map = new GMap2(document.getElementById("map"));
-      map.addControl(new GLargeMapControl());
-      map.addControl(new GMapTypeControl());
-      map.setCenter(new GLatLng(43.907787,-79.359741), 9);
-      {% for lat,lon,label in points %}
-      var marker = createMarker(new GLatLng({{lat}},{{lon}}),'{{label}}')
-      map.addOverlay(marker);
-      {%endfor%}
-    }
-
-
-    else {
-      alert("Sorry, the Google Maps API is not compatible with this browser");
-    }
-
-    // This Javascript is based on code provided by the
-    // Community Church Javascript Team
-    // http://www.bisphamchurch.org.uk/
-    // http://econym.org.uk/gmap/
+    {% include "map_js.js" %}
 
     //]]>
     </script>
 
-  </body>
-
-</html>
+{% endblock %}
