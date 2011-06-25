@@ -34,6 +34,7 @@ def after_request(response):
 
 before_request = app.before_request(before_request)
 after_request = app.after_request(after_request)
+CONTROL_T = "<br/><span class=control_class>{link}</span>"
 
 @app.route('/')
 def slash():
@@ -53,16 +54,18 @@ def slash():
         lat, lon = obj['coords'].split(',')
         label = obj.get('label', 'label is empty')
         if g.user:
-            js = "$.post('/remove',{id:'" + _id + "'});window.location='/';"
-            js = "do_remove(\\x27"+_id+"\\x27);"#.replace("'",'\\x27')
-            #js = """alert('"""+_id+"""');""".replace("'",r'\\x27')
-            control  = '''<br/><span><a href="javascript:{js}">remove this point</a></span>'''
-            control  = control.format(js=js)
+            js = "do_remove(\\x27"+_id+"\\x27);"
+            control  = CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
+            js = "do_label(\\x27"+_id+"\\x27);"
+            control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust label for this point</a>'''.format(js=js))
+            js = "do_label(\\x27"+_id+"\\x27);"
+            control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust tag for this point</a>'''.format(js=js))
             label   += control
         points.append([lat,lon,label])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html',
+                           authenticated=authenticated(g),
                            points=points,
                            center_lat=center_lat,
                            center_lon=center_lon,
@@ -70,7 +73,7 @@ def slash():
                            maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom)
 
-
+def authenticated(g): return True if g.user else False
 
 @app.route('/remove',methods=['POST'])
 def remove():
@@ -98,8 +101,28 @@ def set_location():
     return render_template('set.html',
                            center_lat='43.907787',
                            center_lon='-79.359741',
-                           center_zoom=center_zoom
+                           center_zoom=center_zoom,
+                           authenticated=authenticated(g),
                            )
+@app.route('/set_label',methods=['POST'])
+def set_label():
+    """ sets a label for a location """
+    if not g.user:
+        return redirect('/login')
+    if request.method == 'POST':
+        db = couch['coordinates']
+        _id = request.form['id']
+        label = request.form['label']
+        before = db[request.form['id']]
+        before = dict(before.items())
+        before.pop('_rev')
+        before['label']=label
+        # stupid.. have to delete and restore instead of update?
+        del db[_id]
+        db[_id] = before
+        report('updated label for ',[_id,label])
+        return redirect('/')
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -136,8 +159,8 @@ def logout():
     session.pop('user_id', None)
     return redirect('/')
 
-## Begin couch-specific stuff
 def setup():
+    """ couch-specific stuff """
     import couchdb
     global couch
     couch = couchdb.Server(SERVER)
@@ -145,6 +168,9 @@ def setup():
 
 def coordinates(db):
     return filter(lambda x: not x.startswith('_design'), db)
+
+def report(msg, vars):
+    print msg,vars
 
 setup()
 
