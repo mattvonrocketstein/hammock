@@ -1,6 +1,8 @@
 from flask import render_template, abort, g, flash
 from flask import Flask, request, session, url_for, redirect
 
+def authenticated(g): return True if g.user else False
+
 def logout():
     """Logs the user out."""
     flash('You were logged out')
