@@ -55,40 +55,34 @@ def slash():
                            maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom)
 
-def authenticated(g): return True if g.user else False
-
 @app.route('/remove',methods=['POST'])
 def remove():
+    """ remove a loction ajax """
     if not g.user:
         return redirect('/login')
     if request.method=='POST':
-        print 'removing',request.form['id']
-        del couch['coordinates'][request.form['id']]
+        _id = request.form['id']
+        print 'removing', _id
+        del couch['coordinates'][_id]
         return redirect('/')
 
 @app.route('/set', methods=['GET', 'POST'])
 def set_location():
-    """ sets a location """
+    """ sets a location ajax """
     if not g.user:
         return redirect('/login')
     if request.method == 'POST':
         db = couch['coordinates']
         date_str = str(datetime.datetime.now())
-        data = {'coords':request.form['coords'].replace('(','').replace(')',''),
-                'tag':date_str,
-                }
+        coords=request.form['coords'].replace('(','').replace(')','')
+        data = dict(coords=coords,
+                    tag=date_str)
         db[date_str] = data
-        # this is ignored since it's posted with ajax..
         return redirect('/')
-    return render_template('set.html',
-                           center_lat='43.907787',
-                           center_lon='-79.359741',
-                           center_zoom=center_zoom,
-                           authenticated=authenticated(g),
-                           )
+
 @app.route('/set_label',methods=['POST'])
 def set_label():
-    """ sets a label for a location """
+    """ ajax -- sets a label for a location """
     if not g.user:
         return redirect('/login')
     if request.method == 'POST':
