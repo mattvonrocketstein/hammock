@@ -10,31 +10,13 @@ from werkzeug import check_password_hash, generate_password_hash
 
 from hammock._math import box, calculate_center
 from hammock.data import *
+from hammock.auth import *
+from hammock.plumbing import *
 
 ## Begin flask setup
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
-
-## Begin flask plumbing
-
-def before_request():
-    """ Make sure we are connected to the database
-        each request and look up the current user
-        so that we know he's there.
-    """
-    g.user = None
-    if 'user_id' in session:
-        print 'logged in'
-        g.user='superuser'
-
-def after_request(response):
-    """ nothing to do here so far. """
-    return response
-
-before_request = app.before_request(before_request)
-after_request = app.after_request(after_request)
-CONTROL_T = "<br/><span class=control_class>{link}</span>"
+app.secret_key = SECRET_KEY
 
 @app.route('/')
 def slash():
@@ -124,41 +106,6 @@ def set_label():
         return redirect('/')
 
 
-@app.route('/logout', methods=['GET', 'POST'])
-def logout():
-    session['user_id']=None
-    return redirect('/login')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """ Logs the user in.
-        TODO: add back hashing after everything else is working
-    """
-    if g.user:
-        print g,g.user
-        return redirect('/')
-    error = None
-    if request.method == 'POST':
-        user = dict(user_id='superuser',pw_hash='test')
-        if user is None:
-            error = 'Invalid username'
-        elif not user['pw_hash']==request.form['password']:
-        #elif not check_password_hash(user['pw_hash'],
-        #                             request.form['password']):
-            error = 'Invalid password'
-        else:
-            flash('You were logged in')
-            session['user_id'] = user['user_id']
-            return redirect('/')
-    return render_template('login.html', error=error)
-
-@app.route('/logout')
-def logout():
-    """Logs the user out."""
-    flash('You were logged out')
-    session.pop('user_id', None)
-    return redirect('/')
-
 def setup():
     """ couch-specific stuff """
     import couchdb
@@ -173,6 +120,11 @@ def report(msg, vars):
     print msg,vars
 
 setup()
+
+before_request = app.before_request(before_request)
+after_request  = app.after_request(after_request)
+login          = app.route('/login', methods=['GET', 'POST'])(login)
+logout         = app.route('/logout')(logout)
 
 if __name__=='__main__':
     # hook for to clean up the database by hand
