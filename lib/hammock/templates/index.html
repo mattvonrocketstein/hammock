@@ -29,8 +29,10 @@
 </script>
 {%if authenticated%}
 <div id="label_dialog" title="Label?">
-  Label for point at <span id=label_current>???</span><br/>
-  <input id=label_input style="width:150px;" type=text>
+  <small>Label for point at <span id=label_current>???</span></small>
+  <br/>
+  <br/>
+  <center><input id=label_input style="width:150px;" type=text></center>
 </div>
 {%endif%}
 {% endblock %}
