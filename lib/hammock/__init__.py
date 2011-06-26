@@ -12,7 +12,7 @@ from hammock._math import box, calculate_center
 from hammock.data import *
 from hammock.auth import *
 from hammock.plumbing import *
-from hammock._couch import update_db, setup, coordinates
+from hammock._couch import update_db, setup, coordinates, handle_dirty_entry
 
 ## Begin flask setup
 app = Flask(__name__)
@@ -35,12 +35,6 @@ def render_control(_id):
     control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
     return control
 
-def handle_dirty_entry(_id):
-    """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it',[_id])
-    db = couch['coordinates']
-    del db[_id]
-
 @app.route('/')
 def slash():
     """ the homepage:
@@ -56,7 +50,10 @@ def slash():
             continue
         lat, lon = obj['coords'].split(',')
         label    = obj.get('label', 'label is empty')
+
+        #only the first tag is used currently
         tags     = [ obj.get('tag', 'default') ]
+
         if authenticated(g):
             label   += render_control(_id)
         points.append([lat,lon, label, tags])
@@ -81,11 +78,10 @@ def remove():
         del couch['coordinates'][_id]
         return redirect('/')
 
+@requires_authentication
 @app.route('/set', methods=['GET', 'POST'])
 def set_location():
     """ sets a location ajax """
-    if not g.user:
-        return redirect('/login')
     if request.method == 'POST':
         db = couch['coordinates']
         date_str = str(datetime.datetime.now())
@@ -95,6 +91,7 @@ def set_location():
         return redirect('/')
 
 def set_factory(attr):
+    """ """
     def setter():
         """ ajax -- sets an setter.attribute for a location
             flask does something weird so that this closure doesn't
