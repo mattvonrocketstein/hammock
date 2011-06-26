@@ -55,10 +55,11 @@ def slash():
             handle_dirty_entry(_id)
             continue
         lat, lon = obj['coords'].split(',')
-        label = obj.get('label', 'label is empty')
-        if g.user:
+        label    = obj.get('label', 'label is empty')
+        tags     = [ obj.get('tag', 'default') ]
+        if authenticated(g):
             label   += render_control(_id)
-        points.append([lat,lon,label])
+        points.append([lat,lon, label, tags])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html',
@@ -70,11 +71,10 @@ def slash():
                            maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom)
 
+@requires_authentication
 @app.route('/remove',methods=['POST'])
 def remove():
     """ remove a loction ajax """
-    if not g.user:
-        return redirect('/login')
     if request.method=='POST':
         _id = request.form['id']
         print 'removing', _id
@@ -90,21 +90,9 @@ def set_location():
         db = couch['coordinates']
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
-        data = dict(coords=coords,
-                    tag=date_str)
+        data = dict(coords=coords, timestamp=date_str, tag='default')
         db[date_str] = data
         return redirect('/')
-
-def requires_authentication(fxn):
-    def new_fxn(*args, **kargs):
-        if not g.user:
-            report('view requires authentication..redirecting to login',[fxn,g.user])
-            return redirect('/login')
-        else:
-            result = fxn(*args, **kargs)
-            return result
-    return new_fxn
-
 
 def set_factory(attr):
     def setter():
@@ -126,8 +114,8 @@ def set_factory(attr):
     setter = requires_authentication(setter)
     setter = app.route(url, methods=['POST'])(setter)
     setter.attr = attr
-    print " * built setter",[attr,url]
-    return setter
+    print " * built setter", [attr,url]
+    return requires_authentication(setter)
 
 set_label = set_factory('label')
 set_tag   = set_factory('tag')

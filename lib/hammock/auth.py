@@ -5,6 +5,16 @@ from flask import Flask, request, session, url_for, redirect
 
 def authenticated(g): return True if g.user else False
 
+def requires_authentication(fxn):
+    def new_fxn(*args, **kargs):
+        if not g.user:
+            report('view requires authentication..redirecting to login',[fxn,g.user])
+            return redirect('/login')
+        else:
+            result = fxn(*args, **kargs)
+            return result
+    return new_fxn
+
 def logout():
     """Logs the user out."""
     flash('You were logged out')
