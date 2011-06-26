@@ -10,7 +10,20 @@
 <h2>Where's matt?</h2>
 {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
+{%if authenticated%}
+<form action="#" onsubmit="showAddress(this.address.value); return false">
+  <p>
+    <input id="doomwagon" type="text" style="width:350px" name="address" value="1600 Amphitheatre Pky, Mountain View, CA" />
+  </p>
+</form>
+<script>
+  $('#doomwagon').bind('keypress',
+  function(e){
+  if(e.which == 13){showAddress($('#doomwagon').val());}
+  });
 
+</script>
+{%endif%}
 <center><div id="map" style="width:650px; height: 450px"></div></center>
 
 <!-- fail nicely if the browser has no Javascript -->
