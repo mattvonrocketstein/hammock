@@ -28,11 +28,18 @@
     //]]>
 </script>
 {%if authenticated%}
-<div id="label_dialog" title="Label?">
-  <small>Label for point at <span id=label_current>???</span></small>
+<div class=dialog id="label_dialog" title="Label?">
+  <small>Label for: <span id=label_current>???</span></small>
   <br/>
   <br/>
   <center><input id=label_input style="width:150px;" type=text></center>
 </div>
+<div class=dialog id="tag_dialog" title="Tag?">
+  <small>Tag for: <span id=tag_current>???</span></small>
+  <br/>
+  <br/>
+  <center><input id=tag_input style="width:150px;" type=text></center>
+</div>
+
 {%endif%}
 {% endblock %}
