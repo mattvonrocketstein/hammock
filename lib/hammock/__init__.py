@@ -12,11 +12,34 @@ from hammock._math import box, calculate_center
 from hammock.data import *
 from hammock.auth import *
 from hammock.plumbing import *
+from hammock._couch import update_db, setup, coordinates
 
 ## Begin flask setup
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
+
+def report(msg, vars):
+    print msg,vars
+
+def render_control(_id):
+    """ escaping stuff is obnoxious:
+        the \x27 is javascript for single-quote
+    """
+    control = ''
+    js = "do_label(\\x27"+_id+"\\x27);"
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust label for this point</a>'''.format(js=js))
+    js = "do_tag(\\x27"+_id+"\\x27);"
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust tag for this point</a>'''.format(js=js))
+    js = "do_remove(\\x27"+_id+"\\x27);"
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
+    return control
+
+def handle_dirty_entry(_id):
+    """ page at / may call this handler on malformed database entries. """
+    report('dirty entry in coordinates database.. removing it',[_id])
+    db = couch['coordinates']
+    del db[_id]
 
 @app.route('/')
 def slash():
@@ -24,25 +47,17 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-    db = couch['coordinates']
-    points=[]
+    db     = couch['coordinates']
+    points = []
     for _id in coordinates(db):
         obj = db[_id]
         if 'coords' not in obj:
-            print 'dirty entry in coordinates database.. removing it'
-            #del db[_id]
+            handle_dirty_entry(_id)
             continue
-        print '-'*10,_id, obj['coords']
         lat, lon = obj['coords'].split(',')
         label = obj.get('label', 'label is empty')
         if g.user:
-            js = "do_remove(\\x27"+_id+"\\x27);"
-            control  = CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
-            js = "do_label(\\x27"+_id+"\\x27);"
-            control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust label for this point</a>'''.format(js=js))
-            js = "do_label(\\x27"+_id+"\\x27);"
-            control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust tag for this point</a>'''.format(js=js))
-            label   += control
+            label   += render_control(_id)
         points.append([lat,lon,label])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
@@ -80,40 +95,43 @@ def set_location():
         db[date_str] = data
         return redirect('/')
 
-@app.route('/set_label',methods=['POST'])
-def set_label():
-    """ ajax -- sets a label for a location """
-    if not g.user:
-        return redirect('/login')
-    if request.method == 'POST':
-        db = couch['coordinates']
-        _id = request.form['id']
-        label = request.form['label']
-        before = db[request.form['id']]
-        before = dict(before.items())
-        before.pop('_rev')
-        before['label']=label
-        # stupid.. have to delete and restore instead of update?
-        del db[_id]
-        db[_id] = before
-        report('updated label for ',[_id,label])
-        return redirect('/')
+def requires_authentication(fxn):
+    def new_fxn(*args, **kargs):
+        if not g.user:
+            report('view requires authentication..redirecting to login',[fxn,g.user])
+            return redirect('/login')
+        else:
+            result = fxn(*args, **kargs)
+            return result
+    return new_fxn
 
 
-def setup():
-    """ couch-specific stuff """
-    import couchdb
-    global couch
-    couch = couchdb.Server(SERVER)
-    couch.resource.credentials = CREDENTIALS
+def set_factory(attr):
+    def setter():
+        """ ajax -- sets an setter.attribute for a location
+            flask does something weird so that this closure doesn't
+            work the way it ought to.  hence we have to calculate 'attr'
+            based on request path :(
+        """
+        this_attr = request.url.split('/')[-1].split('_')[-1]
+        if request.method == 'POST':
+            db    = couch['coordinates']
+            _id   = request.form['id']
+            report("in inner set with", [_id, this_attr, request.form.keys()])
+            label = request.form[this_attr]
+            report("in inner set with", [label])
+            update_db(db, _id, {this_attr:label})
+            return redirect('/')
+    url    = '/set_' + attr
+    setter = requires_authentication(setter)
+    setter = app.route(url, methods=['POST'])(setter)
+    setter.attr = attr
+    print " * built setter",[attr,url]
+    return setter
 
-def coordinates(db):
-    return filter(lambda x: not x.startswith('_design'), db)
-
-def report(msg, vars):
-    print msg,vars
-
-setup()
+set_label = set_factory('label')
+set_tag   = set_factory('tag')
+couch     = setup()
 
 before_request = app.before_request(before_request)
 after_request  = app.after_request(after_request)
