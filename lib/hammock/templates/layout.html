@@ -6,9 +6,7 @@
   <div class=navigation>
     <a href="/">main</a> |
     {% if g.user %}
-    <a href="/set">add location</a> |
-    <a href="/setr">add retroactive location</a> |
-    <a href="{{ url_for('logout') }}">sign out [{{ g.user.username }}]</a>
+    <a href="{{ url_for('logout') }}">sign out [{{ g.user }}]</a>
   {% else %}
     <a href="{{ url_for('login') }}">sign in</a>
   {% endif %}
