@@ -10,6 +10,7 @@ from werkzeug import check_password_hash, generate_password_hash
 
 from hammock._math import box, calculate_center
 from hammock.data import *
+from hammock.util import *
 from hammock.auth import *
 from hammock.plumbing import *
 from hammock._couch import update_db, setup, coordinates, handle_dirty_entry
@@ -18,9 +19,6 @@ from hammock._couch import update_db, setup, coordinates, handle_dirty_entry
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
-
-def report(msg, vars):
-    print msg,vars
 
 def render_control(_id):
     """ escaping stuff is obnoxious:
