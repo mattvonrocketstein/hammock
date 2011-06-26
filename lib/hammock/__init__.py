@@ -49,7 +49,7 @@ def slash():
             handle_dirty_entry(_id)
             continue
         lat, lon = obj['coords'].split(',')
-        label    = obj.get('label', 'label is empty')
+        label    = '<b>'+obj.get('label', 'label is empty')+'</b>'
 
         #only the first tag is used currently
         tags     = [ obj.get('tag', 'default') ]

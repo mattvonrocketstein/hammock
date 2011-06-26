@@ -11,11 +11,10 @@
 {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
 {%if authenticated%}
-<form action="#" onsubmit="showAddress(this.address.value); return false">
-  <p>
-    <input id="doomwagon" type="text" style="width:350px" name="address" value="1600 Amphitheatre Pky, Mountain View, CA" />
-  </p>
-</form>
+<div>
+  <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" />
+</div>
+<div></div>
 <script>
   $('#doomwagon').bind('keypress',
   function(e){
@@ -40,10 +39,14 @@
 </script>
 {%if authenticated%}
 <div class=dialog id="label_dialog" title="Label?">
-  <small>Label for: <span id=label_current>???</span></small>
-  <br/>
-  <br/>
-  <center><input id=label_input style="width:150px;" type=text></center>
+  <small>Label for: <br/>&nbsp;&nbsp;
+    <span id=label_current>???</span></small>
+  <br/>  <br/>
+  <center>
+    <input id=label_input style="width:150px;" type=text>
+    <br/><br/>
+    <small><a href=#>click to set from reverse-geocode</a></small>
+  </center>
 </div>
 <div class=dialog id="tag_dialog" title="Tag?">
   <small>Tag for: <span id=tag_current>???</span></small>
