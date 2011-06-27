@@ -22,7 +22,7 @@ def setup():
     return couch
 
 def coordinates(db):
-    return filter(lambda x: not x.startswith('_design'), db)
+    return filter(lambda x: not x.startswith('_'), db)
 
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """

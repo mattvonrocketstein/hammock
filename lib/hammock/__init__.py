@@ -33,6 +33,13 @@ def render_control(_id):
     control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
     return control
 
+def tag2iconf(tag):
+    if tag=='default':
+        iconf = "/static/markers/yellow_MarkerC.png";
+    else:
+        iconf = "/static/markers/blue_MarkerC.png";
+    return iconf
+
 @app.route('/')
 def slash():
     """ the homepage:
@@ -50,11 +57,11 @@ def slash():
         label    = '<b>'+obj.get('label', 'label is empty')+'</b>'
 
         #only the first tag is used currently
-        tags     = [ obj.get('tag', 'default') ]
-
+        tag     = obj.get('tag', 'default')
+        iconf   = tag2iconf(tag)
         if authenticated(g):
             label   += render_control(_id)
-        points.append([lat,lon, label, tags])
+        points.append([lat,lon, label, iconf])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html',
