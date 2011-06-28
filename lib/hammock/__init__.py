@@ -2,7 +2,7 @@
 """
 """
 
-import datetime
+import datetimeMAPS_API_KEY
 from flask import render_template, abort, g, flash
 from flask import Flask, request, session, url_for, redirect
 
@@ -71,7 +71,8 @@ def slash():
                            center_lon=center_lon,
                            minLat=minLat, minLng=minLng,
                            maxLat=maxLat, maxLng=maxLng,
-                           center_zoom=center_zoom)
+                           center_zoom=center_zoom,
+                           API_KEY=MAPS_API_KEY)
 
 @requires_authentication
 @app.route('/remove',methods=['POST'])
