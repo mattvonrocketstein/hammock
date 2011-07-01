@@ -10,8 +10,6 @@
   {% else %}
     <a href="{{ url_for('login') }}">sign in</a>
   {% endif %}
-    {%block extra_navigation%}
-    {%endblock%}
   </div>
   {% with flashes = get_flashed_messages() %}
     {% if flashes %}
