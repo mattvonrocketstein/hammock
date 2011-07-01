@@ -46,7 +46,7 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-    db     = couch['coordinates']
+    db     = get_db() #couch['coordinates']
     points = []
     authorized = authenticated(g)
     for _id in coordinates(db):
@@ -94,7 +94,8 @@ def remove():
     if request.method=='POST':
         _id = request.form['id']
         print 'removing', _id
-        del couch['coordinates'][_id]
+        #del couch['coordinates'][_id]
+        del get_db()[_id]
         return redirect('/')
 
 @requires_authentication
@@ -102,12 +103,15 @@ def remove():
 def set_location():
     """ sets a location ajax """
     if request.method == 'POST':
-        db = couch['coordinates']
+        db = get_db() #couch['coordinates']
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
         data = dict(coords=coords, timestamp=date_str, tag='default')
         db[date_str] = data
         return redirect('/')
+
+def get_db():
+    return setup()['coordinates']
 
 def set_factory(attr):
     """ """
@@ -119,7 +123,7 @@ def set_factory(attr):
         """
         this_attr = request.url.split('/')[-1].split('_')[-1]
         if request.method == 'POST':
-            db    = couch['coordinates']
+            db    = get_db()
             _id   = request.form['id']
             report("in inner set with", [_id, this_attr, request.form.keys()])
             label = request.form[this_attr]
