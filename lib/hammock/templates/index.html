@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Where's matt{% endblock %}
+
 {% block body %}
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key={{API_KEY}}" type="text/javascript"></script>
@@ -10,22 +11,22 @@
 <h2>Where's matt?</h2>
 {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
-{%block extra_navigation%}
-<a href="/">Africa</a> |
-<a href="/">America(North)</a> |
-<a href="/">America(South)</a> |
-<a href="/">Asia</a> |
-<a href="/">Australia</a> |
-<a href="/">Europe</a> |
-{%endblock%}
 
 <div>
   <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" />
 </div>
 <div></div>
 
-<center><div id="map" style="width:650px; height: 450px"></div></center>
-
+<center><div id="map" style="width:650px; height: 450px"></div>
+<span id=extra_navigation>
+  <a href="/">Africa</a> |
+  <a href="/">America(North)</a> |
+  <a href="/">America(South)</a> |
+  <a href="/">Asia</a> |
+  <a href="/">Australia</a> |
+  <a href="/">Europe</a> |
+</span>
+</center>
 <!-- fail nicely if the browser has no Javascript -->
 <noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
   However, it seems JavaScript is either disabled or not supported by your browser.
@@ -38,6 +39,12 @@
     {% include "map_js.js" %}
     //]]>
 </script>
+
+
+
+
+
+
 {%if authenticated%}
 <div class=dialog id="label_dialog" title="Label?">
   <small>Label for: <br/>
