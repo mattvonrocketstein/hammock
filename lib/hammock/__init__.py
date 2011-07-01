@@ -61,11 +61,16 @@ def slash():
         #only the first tag is used currently
         tag     = obj.get('tag', 'default')
 
-        #learn to do this with couch not python..
-        #print '  +', _id, tag
-        #if tag=='default':
-        #    continue
-
+        """
+        >>> map_fun = '''function(doc) {
+        ...     emit([doc.type, doc.name], doc.name);
+        ... }'''
+        >>> results = db.query(map_fun)
+        """
+        # query by..
+        #z=[x for x in \
+        #   db.query("""function(doc){if(doc.tag=="default"){emit(null,doc);}}""")
+        #   ]
         iconf   = tag2iconf(tag)
         if authorized:
             label   += render_control(_id,lat,lon)
@@ -137,6 +142,11 @@ after_request  = app.after_request(after_request)
 login          = app.route('/login', methods=['GET', 'POST'])(login)
 logout         = app.route('/logout')(logout)
 
+x = """
+function(doc) {
+        if(doc.label=="default"){emit(null,doc);}
+        }
+"""
 if __name__=='__main__':
     # hook for to clean up the database by hand
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
