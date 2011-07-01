@@ -176,8 +176,7 @@ div.error {
     padding: 4px;
     font-size: 13px;
 }
-span.label_stuff {
-span#extra_navigation {
+span#extra_navigation, span.label_stuff {
     align:right;
     margin: 10px 0;
     -moz-border-radius: 2px;
