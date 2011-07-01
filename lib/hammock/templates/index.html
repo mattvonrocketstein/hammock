@@ -10,6 +10,14 @@
 <h2>Where's matt?</h2>
 {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
+{%block extra_navigation%}
+<a href="/">Africa</a> |
+<a href="/">America(North)</a> |
+<a href="/">America(South)</a> |
+<a href="/">Asia</a> |
+<a href="/">Australia</a> |
+<a href="/">Europe</a> |
+{%endblock%}
 
 <div>
   <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" />
@@ -32,13 +40,28 @@
 </script>
 {%if authenticated%}
 <div class=dialog id="label_dialog" title="Label?">
-  <small>Label for: <br/>&nbsp;&nbsp;
-    <span id=label_current>???</span></small>
+  <small>Label for: <br/>
+    <table class=label_stuff>
+      <tr>
+        <td>
+          <span class=label_stuff id=label_current>???</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class=label_stuff id=label_coords>???</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input id=label_input style="width:250px;" type=text>
+        </td>
+      </tr>
+    </table>
   <br/>  <br/>
   <center>
-    <input id=label_input style="width:150px;" type=text>
     <br/><br/>
-    <small><a href=#>click to set from reverse-geocode</a></small>
+    <small><a href=javascript:getAddress($('#label_coords').html(),'label_input');>click to set from geocode</a></small>
   </center>
 </div>
 <div class=dialog id="tag_dialog" title="Tag?">

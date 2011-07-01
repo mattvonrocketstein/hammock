@@ -20,12 +20,12 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 
-def render_control(_id):
+def render_control(_id, lat, lon):
     """ escaping stuff is obnoxious:
         the \x27 is javascript for single-quote
     """
     control = ''
-    js = "do_label(\\x27"+_id+"\\x27);"
+    js = "do_label(\\x27"+_id+"\\x27,{lat},{lon});".format(lat=lat,lon=lon)
     control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust label for this point</a>'''.format(js=js))
     js = "do_tag(\\x27"+_id+"\\x27);"
     control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust tag for this point</a>'''.format(js=js))
@@ -48,19 +48,27 @@ def slash():
     """
     db     = couch['coordinates']
     points = []
+    authorized = authenticated(g)
     for _id in coordinates(db):
+
         obj = db[_id]
         if 'coords' not in obj:
             handle_dirty_entry(_id)
             continue
         lat, lon = obj['coords'].split(',')
-        label    = '<b>'+obj.get('label', 'label is empty')+'</b>'
+        label    = '<b>' + obj.get('label', 'label is empty') + '</b>'
 
         #only the first tag is used currently
         tag     = obj.get('tag', 'default')
+
+        #learn to do this with couch not python..
+        #print '  +', _id, tag
+        #if tag=='default':
+        #    continue
+
         iconf   = tag2iconf(tag)
-        if authenticated(g):
-            label   += render_control(_id)
+        if authorized:
+            label   += render_control(_id,lat,lon)
         points.append([lat,lon, label, iconf])
     center_lat,center_lon = calculate_center(points)
     minLat, minLng, maxLat, maxLng = box(points)
