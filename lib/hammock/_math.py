@@ -1,4 +1,6 @@
 def box(points):
+    if not points:
+        return None, None, None, None
     points = [ [p[0], p[1]] for p in points] # drop label
     points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
     lats = [p[0] for p in points]
@@ -6,6 +8,8 @@ def box(points):
     return min(lats), min(lons), max(lats), max(lons)
 
 def calculate_center(points):
+    if not points:
+        return None, None
     points = [ [p[0], p[1]] for p in points] # drop label
     points = [ map(float, [p[0], p[1]]) for p in points] # make numeric
     lats = [p[0] for p in points]
