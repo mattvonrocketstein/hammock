@@ -33,11 +33,14 @@ def render_control(_id, lat, lon):
     control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
     return control
 
+def getmarker(color):
+    return "/static/markers/{color}_Marker.png".format(color=color)
+
 def tag2iconf(tag):
     if tag=='default':
-        iconf = "/static/markers/yellow_Marker.png";
+        iconf = getmarker('yellow')
     else:
-        iconf = "/static/markers/blue_Marker.png";
+        iconf = getmarker('blue')
     return iconf
 
 @app.route('/')
@@ -49,7 +52,7 @@ def slash():
     db     = get_db()
     points = []
     authorized = authenticated(g)
-    for _id in coordinates(db):
+    for _id in coordinates(db)[:3]:
 
         obj = db[_id]
         if 'coords' not in obj:
@@ -75,8 +78,14 @@ def slash():
         if authorized:
             label   += render_control(_id,lat,lon)
         points.append([lat,lon, label, iconf])
-    center_lat,center_lon = calculate_center(points)
-    minLat, minLng, maxLat, maxLng = box(points)
+    center = request.values.get('center')
+    center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
+    if center:
+        center_lat, center_lon = center.split(',')
+        minLat, minLng, maxLat, maxLng = None, None, None, None
+    else:
+        center_lat, center_lon = calculate_center(points)
+        minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html',
                            authenticated=authenticated(g),
                            points=points,

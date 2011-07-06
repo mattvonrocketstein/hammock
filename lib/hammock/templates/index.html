@@ -7,25 +7,17 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
-{% block subtitle %}
-<h2>Where's matt?</h2>
-{% endblock %}
+{% block subtitle %} <h2>Where's matt?</h2> {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
 
 <div>
-  <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" />
+  <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" /><br/>
+  <!--a href=javascript:alert(map.getCenter());>show map center</a><br/-->
 </div>
-<div></div>
+
+{%include "navigation.html"%}
 
 <center><div id="map" style="width:650px; height: 450px"></div>
-<span id=extra_navigation>
-  <a href="/">Africa</a> |
-  <a href="/">America(North)</a> |
-  <a href="/">America(South)</a> |
-  <a href="/">Asia</a> |
-  <a href="/">Australia</a> |
-  <a href="/">Europe</a> |
-</span>
 </center>
 <!-- fail nicely if the browser has no Javascript -->
 <noscript><b>JavaScript must be enabled in order for you to use Google Maps.</b>
@@ -40,43 +32,7 @@
     //]]>
 </script>
 
-
-
-
-
-
 {%if authenticated%}
-<div class=dialog id="label_dialog" title="Label?">
-  <small>Label for: <br/>
-    <table class=label_stuff>
-      <tr>
-        <td>
-          <span class=label_stuff id=label_current>???</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <span class=label_stuff id=label_coords>???</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <input id=label_input style="width:250px;" type=text>
-        </td>
-      </tr>
-    </table>
-  <br/>  <br/>
-  <center>
-    <br/><br/>
-    <small><a href=javascript:getAddress($('#label_coords').html(),'label_input');>click to set from geocode</a></small>
-  </center>
-</div>
-<div class=dialog id="tag_dialog" title="Tag?">
-  <small>Tag for: <span id=tag_current>???</span></small>
-  <br/>
-  <br/>
-  <center><input id=tag_input style="width:150px;" type=text></center>
-</div>
-
+{%include "dialogs.html" %}
 {%endif%}
 {% endblock %}
