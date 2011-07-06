@@ -1,0 +1,31 @@
+<div class=dialog id="label_dialog" title="Label?">
+  <small>Label for: <br/>
+    <table class=label_stuff>
+      <tr>
+        <td>
+          <span class=label_stuff id=label_current>???</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class=label_stuff id=label_coords>???</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input id=label_input style="width:250px;" type=text>
+        </td>
+      </tr>
+    </table>
+  <br/>  <br/>
+  <center>
+    <br/><br/>
+    <small><a href=javascript:getAddress($('#label_coords').html(),'label_input');>click to set from geocode</a></small>
+  </center>
+</div>
+<div class=dialog id="tag_dialog" title="Tag?">
+  <small>Tag for: <span id=tag_current>???</span></small>
+  <br/>
+  <br/>
+  <center><input id=tag_input style="width:150px;" type=text></center>
+</div>
