@@ -35,9 +35,9 @@ def render_control(_id, lat, lon):
 
 def tag2iconf(tag):
     if tag=='default':
-        iconf = "/static/markers/yellow_MarkerC.png";
+        iconf = "/static/markers/yellow_Marker.png";
     else:
-        iconf = "/static/markers/blue_MarkerC.png";
+        iconf = "/static/markers/blue_Marker.png";
     return iconf
 
 @app.route('/')
@@ -46,7 +46,7 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-    db     = get_db() #couch['coordinates']
+    db     = get_db()
     points = []
     authorized = authenticated(g)
     for _id in coordinates(db):
@@ -93,8 +93,6 @@ def remove():
     """ remove a loction ajax """
     if request.method=='POST':
         _id = request.form['id']
-        print 'removing', _id
-        #del couch['coordinates'][_id]
         del get_db()[_id]
         return redirect('/')
 
@@ -103,7 +101,7 @@ def remove():
 def set_location():
     """ sets a location ajax """
     if request.method == 'POST':
-        db = get_db() #couch['coordinates']
+        db = get_db()
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
         data = dict(coords=coords, timestamp=date_str, tag='default')
