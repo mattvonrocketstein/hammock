@@ -33,11 +33,14 @@ def render_control(_id, lat, lon):
     control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
     return control
 
+def getmarker(color):
+    return "/static/markers/{color}_Marker.png".format(color=color)
+
 def tag2iconf(tag):
     if tag=='default':
-        iconf = "/static/markers/yellow_MarkerC.png";
+        iconf = getmarker('yellow')
     else:
-        iconf = "/static/markers/blue_MarkerC.png";
+        iconf = getmarker('blue')
     return iconf
 
 @app.route('/')
@@ -46,10 +49,10 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-    db     = get_db() #couch['coordinates']
+    db     = get_db()
     points = []
     authorized = authenticated(g)
-    for _id in coordinates(db):
+    for _id in coordinates(db): #[:3]:
 
         obj = db[_id]
         if 'coords' not in obj:
@@ -75,8 +78,14 @@ def slash():
         if authorized:
             label   += render_control(_id,lat,lon)
         points.append([lat,lon, label, iconf])
-    center_lat,center_lon = calculate_center(points)
-    minLat, minLng, maxLat, maxLng = box(points)
+    center = request.values.get('center')
+    center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
+    if center:
+        center_lat, center_lon = center.split(',')
+        minLat, minLng, maxLat, maxLng = None, None, None, None
+    else:
+        center_lat, center_lon = calculate_center(points)
+        minLat, minLng, maxLat, maxLng = box(points)
     return render_template('index.html',
                            authenticated=authenticated(g),
                            points=points,
@@ -93,8 +102,6 @@ def remove():
     """ remove a loction ajax """
     if request.method=='POST':
         _id = request.form['id']
-        print 'removing', _id
-        #del couch['coordinates'][_id]
         del get_db()[_id]
         return redirect('/')
 
@@ -103,7 +110,7 @@ def remove():
 def set_location():
     """ sets a location ajax """
     if request.method == 'POST':
-        db = get_db() #couch['coordinates']
+        db = get_db()
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
         data = dict(coords=coords, timestamp=date_str, tag='default')
