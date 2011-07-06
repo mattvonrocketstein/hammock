@@ -7,15 +7,35 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
-{% block subtitle %} <h2>Where's matt?</h2> {% endblock %}
+{% block subtitle %}
+<table width=100%>
+  <tr>
+    <td>
+      <b>where's matt?</b>
+    </td>
+    <td align=right>
+      <small>
+        Center on: {%include "navigation.html"%}
+      </small>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=2 align=right>
+      <small>
+        Or, type a location: <input id="doomwagon" type="text" style="width:330px" name="address" value="type here and press enter to zoom to location" /><br/>
+        </small>
+    </td>
+  </tr>
+</table>
+{% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
 
 <div>
-  <input id="doomwagon" type="text" style="width:350px" name="address" value="type here and press enter to zoom to location" /><br/>
+
   <!--a href=javascript:alert(map.getCenter());>show map center</a><br/-->
 </div>
 
-{%include "navigation.html"%}
+
 
 <center><div id="map" style="width:650px; height: 450px"></div>
 </center>
