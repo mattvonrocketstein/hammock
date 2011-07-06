@@ -52,7 +52,7 @@ def slash():
     db     = get_db()
     points = []
     authorized = authenticated(g)
-    for _id in coordinates(db)[:3]:
+    for _id in coordinates(db): #[:3]:
 
         obj = db[_id]
         if 'coords' not in obj:
