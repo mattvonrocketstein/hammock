@@ -10,23 +10,45 @@
 {% block subtitle %}
 <table width=100%>
   <tr>
-    <td>
+    <td style="vertical-align:top;">
       <b>where's matt?</b>
     </td>
     <td align=right>
-      <small>
-        Center on: {%include "navigation.html"%}
-      </small>
-    </td>
-  </tr>
-  <tr>
-    <td colspan=2 align=right>
-      <small>
-        Or, type a location: <input id="doomwagon" type="text" style="width:330px" name="address" value="type here and press enter to zoom to location" /><br/>
-        </small>
+      <table>
+        <tr>
+          <td>
+            <small>
+              Type a location: </small>
+          </td>
+          <td>
+            <input id="doomwagon" type="text" style="width:330px" name="address" value="type here and press enter to zoom to location" />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <small>
+              Center on:
+            </small>
+          </td>
+          <td>
+            {%include "navigation.html"%}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <small>
+              Or, choose a tag:
+            </small>
+          </td>
+          <td>
+             {%for t in utags%} <a href=/?tag={{t}}>{{t}}</a> |{%endfor%}
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>
+
 {% endblock %}
 {% if error %}<div class=error><strong>Error:</strong> {{ error }}</div>{% endif %}
 
