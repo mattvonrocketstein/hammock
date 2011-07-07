@@ -26,22 +26,32 @@ def render_control(_id, lat, lon):
     """
     control = ''
     js = "do_label(\\x27"+_id+"\\x27,{lat},{lon});".format(lat=lat,lon=lon)
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust label for this point</a>'''.format(js=js))
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust label for this point'))
     js = "do_tag(\\x27"+_id+"\\x27);"
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">adjust tag for this point</a>'''.format(js=js))
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust tag for this point'))
     js = "do_remove(\\x27"+_id+"\\x27);"
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">remove this point</a>'''.format(js=js))
+    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js,label='remove this point'))
     return control
 
 def getmarker(color):
     return "/static/markers/{color}_Marker.png".format(color=color)
 
 def tag2iconf(tag):
-    if tag=='default':
-        iconf = getmarker('yellow')
-    else:
-        iconf = getmarker('blue')
+    if tag=='default':               iconf = getmarker('yellow')
+    if tag in ['hiking','outdoors']: iconf = getmarker('green')
+    else:                            iconf = getmarker('blue')
     return iconf
+
+def all_unique_tags():
+    return all_unique_attr('tag')
+
+def all_unique_attr(attrname):
+    q = '''function(doc){emit(null, doc.%s);}'''%attrname
+    return set([x.value for x in get_db().query(q)])
+
+def filter_where_tag_is(tag):
+    q = '''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
+    return [x.id for x in get_db().query(q)]
 
 @app.route('/')
 def slash():
@@ -49,11 +59,16 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-    db     = get_db()
-    points = []
+    db         = get_db()
+    points     = []
     authorized = authenticated(g)
-    for _id in coordinates(db): #[:3]:
+    use_tag     = request.values.get('tag') or None
+    if use_tag:
+        ROOT = filter_where_tag_is(use_tag)
+    else:
+        ROOT = coordinates(db)#[:3]
 
+    for _id in ROOT:
         obj = db[_id]
         if 'coords' not in obj:
             handle_dirty_entry(_id)
@@ -63,23 +78,14 @@ def slash():
 
         #only the first tag is used currently
         tag     = obj.get('tag', 'default')
-
-        """
-        >>> map_fun = '''function(doc) {
-        ...     emit([doc.type, doc.name], doc.name);
-        ... }'''
-        >>> results = db.query(map_fun)
-        """
-        # query by..
-        #z=[x for x in \
-        #   db.query("""function(doc){if(doc.tag=="default"){emit(null,doc);}}""")
-        #   ]
         iconf   = tag2iconf(tag)
         if authorized:
             label   += render_control(_id,lat,lon)
         points.append([lat,lon, label, iconf])
-    center = request.values.get('center')
+    center      = request.values.get('center')
     center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
+
+    utags       = all_unique_tags()
     if center:
         center_lat, center_lon = center.split(',')
         minLat, minLng, maxLat, maxLng = None, None, None, None
@@ -94,6 +100,7 @@ def slash():
                            minLat=minLat, minLng=minLng,
                            maxLat=maxLat, maxLng=maxLng,
                            center_zoom=center_zoom,
+                           utags=utags,
                            API_KEY=MAPS_API_KEY)
 
 @requires_authentication
