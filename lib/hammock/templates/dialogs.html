@@ -20,11 +20,16 @@
   <br/>  <br/>
   <center>
     <br/><br/>
-    <small><a href=javascript:getAddress($('#label_coords').html(),'label_input');>click to set from geocode</a></small>
+    <small>
+      <a href=javascript:getAddress($('#label_coords').html(),'label_input');>click to set from geocode</a>
+    </small>
   </center>
 </div>
+
 <div class=dialog id="tag_dialog" title="Tag?">
-  <small>Tag for: <span id=tag_current>???</span></small>
+  <small>Tag for: <span id=tag_current_id>???</span></small>
+  <br/>
+  <small>Currently: <span id=tag_current>???</span></small>
   <br/>
   <br/>
   <center><input id=tag_input style="width:150px;" type=text></center>
