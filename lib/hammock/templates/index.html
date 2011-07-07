@@ -18,7 +18,8 @@
         <tr>
           <td>
             <small>
-              Type a location: </small>
+              <b>Type a location:</b>
+            </small>
           </td>
           <td>
             <input id="doomwagon" type="text" style="width:330px" name="address" value="type here and press enter to zoom to location" />
@@ -27,7 +28,7 @@
         <tr>
           <td>
             <small>
-              Center on:
+              <b>Center on:</b>
             </small>
           </td>
           <td>
@@ -37,11 +38,13 @@
         <tr>
           <td>
             <small>
-              Or, choose a tag:
+              <b>Choose a tag:</b>
             </small>
           </td>
           <td>
-             {%for t in utags%} <a href=/?tag={{t}}>{{t}}</a> |{%endfor%}
+             <small>
+               {%for t in utags%} <a href=/?tag={{t}}>{{t}}</a> |{%endfor%}
+             </small>
           </td>
         </tr>
       </table>
