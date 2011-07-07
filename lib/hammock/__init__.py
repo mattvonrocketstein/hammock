@@ -20,14 +20,14 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 
-def render_control(_id, lat, lon):
+def render_control(_id, lat, lon, tag):
     """ escaping stuff is obnoxious:
         the \x27 is javascript for single-quote
     """
     control = ''
     js = "do_label(\\x27"+_id+"\\x27,{lat},{lon});".format(lat=lat,lon=lon)
     control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust label for this point'))
-    js = "do_tag(\\x27"+_id+"\\x27);"
+    js = "do_tag(\\x27"+_id+"\\x27,\\x27"+tag+"\\x27);".format(tag=tag)
     control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust tag for this point'))
     js = "do_remove(\\x27"+_id+"\\x27);"
     control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js,label='remove this point'))
@@ -38,8 +38,8 @@ def getmarker(color):
 
 def tag2iconf(tag):
     if tag=='default':               iconf = getmarker('yellow')
-    if tag in ['hiking','outdoors']: iconf = getmarker('green')
-    else:                            iconf = getmarker('blue')
+    elif tag in ['hiking','outdoors']: iconf = getmarker('green')
+    else:                            iconf = getmarker('blue');
     return iconf
 
 def all_unique_tags():
@@ -80,7 +80,7 @@ def slash():
         tag     = obj.get('tag', 'default')
         iconf   = tag2iconf(tag)
         if authorized:
-            label   += render_control(_id,lat,lon)
+            label   += render_control(_id, lat, lon, tag)
         points.append([lat,lon, label, iconf])
     center      = request.values.get('center')
     center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
