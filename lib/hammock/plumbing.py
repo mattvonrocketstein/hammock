@@ -1,7 +1,7 @@
 """ hammock/plumbing
 """
-from flask import render_template, abort, g, flash
-from flask import Flask, request, session, url_for, redirect
+from flask import g
+from flask import session
 
 def before_request():
     """ Make sure we are connected to the database

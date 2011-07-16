@@ -1,7 +1,8 @@
 """ hammock/auth
 """
-from flask import render_template, abort, g, flash
-from flask import Flask, request, session, url_for, redirect
+from flask import render_template, g, flash
+from flask import request, session, redirect
+from hammock.util import report
 
 def authenticated(g): return True if g.user else False
 
