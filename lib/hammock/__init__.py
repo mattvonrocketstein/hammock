@@ -1,107 +1,41 @@
 # -*- coding: utf-8 -*-
 """
+    TODO: use this stuff:
+
 """
 
 import datetime
-from flask import render_template, abort, g, flash
-from flask import Flask, request, session, url_for, redirect
+import urlparse
+import traceback
 
+from flask import Flask, request, redirect, jsonify
 from werkzeug import check_password_hash, generate_password_hash
 
-from hammock._math import box, calculate_center
-from hammock.data import *
-from hammock.util import *
-from hammock.auth import *
-from hammock.plumbing import *
-from hammock._couch import update_db, setup, coordinates, handle_dirty_entry
+from hammock.util import report
+from hammock.data import SECRET_KEY
+from hammock.auth import requires_authentication
+from hammock._couch import get_db, update_db, setup
+
+
+## Begin database setup
+couch     = setup()
 
 ## Begin flask setup
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = SECRET_KEY
 
-def render_control(_id, lat, lon, tag):
-    """ escaping stuff is obnoxious:
-        the \x27 is javascript for single-quote
-    """
-    control = ''
-    js = "do_label(\\x27"+_id+"\\x27,{lat},{lon});".format(lat=lat,lon=lon)
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust label for this point'))
-    js = "do_tag(\\x27"+_id+"\\x27,\\x27"+tag+"\\x27);".format(tag=tag)
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js, label='adjust tag for this point'))
-    js = "do_remove(\\x27"+_id+"\\x27);"
-    control += CONTROL_T.format(link='''<a href="javascript:{js}">{label}</a>'''.format(js=js,label='remove this point'))
-    return control
+## Begin flask plumbing
+from hammock.plumbing import before_request, after_request
+before_request = app.before_request(before_request)
+after_request  = app.after_request(after_request)
 
-def getmarker(color):
-    return "/static/markers/{color}_Marker.png".format(color=color)
-
-def tag2iconf(tag):
-    if tag=='default':               iconf = getmarker('yellow')
-    elif tag in ['hiking','outdoors']: iconf = getmarker('green')
-    else:                            iconf = getmarker('blue');
-    return iconf
-
-def all_unique_tags():
-    return all_unique_attr('tag')
-
-def all_unique_attr(attrname):
-    q = '''function(doc){emit(null, doc.%s);}'''%attrname
-    return set([x.value for x in get_db().query(q)])
-
-def filter_where_tag_is(tag):
-    q = '''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
-    return [x.id for x in get_db().query(q)]
-
-@app.route('/')
-def slash():
-    """ the homepage:
-        renders all geocoordinates in coordinate database,
-        along with labels.
-    """
-    db         = get_db()
-    points     = []
-    authorized = authenticated(g)
-    use_tag     = request.values.get('tag') or None
-    if use_tag:
-        ROOT = filter_where_tag_is(use_tag)
-    else:
-        ROOT = coordinates(db)#[:3]
-
-    for _id in ROOT:
-        obj = db[_id]
-        if 'coords' not in obj:
-            handle_dirty_entry(_id)
-            continue
-        lat, lon = obj['coords'].split(',')
-        label    = '<b>' + obj.get('label', 'label is empty') + '</b>'
-
-        #only the first tag is used currently
-        tag     = obj.get('tag', 'default')
-        iconf   = tag2iconf(tag)
-        if authorized:
-            label   += render_control(_id, lat, lon, tag)
-        points.append([lat,lon, label, iconf])
-    center      = request.values.get('center')
-    center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
-
-    utags       = all_unique_tags()
-    if center:
-        center_lat, center_lon = center.split(',')
-        minLat, minLng, maxLat, maxLng = None, None, None, None
-    else:
-        center_lat, center_lon = calculate_center(points)
-        minLat, minLng, maxLat, maxLng = box(points)
-    return render_template('index.html',
-                           authenticated=authenticated(g),
-                           points=points,
-                           center_lat=center_lat,
-                           center_lon=center_lon,
-                           minLat=minLat, minLng=minLng,
-                           maxLat=maxLat, maxLng=maxLng,
-                           center_zoom=center_zoom,
-                           utags=utags,
-                           API_KEY=MAPS_API_KEY)
+## Begin flask views
+from hammock.map_home import slash
+from hammock.auth import login,logout
+login          = app.route('/login', methods=['GET', 'POST'])(login)
+logout         = app.route('/logout')(logout)
+slash          = app.route('/')(slash)
 
 @requires_authentication
 @app.route('/remove',methods=['POST'])
@@ -110,22 +44,22 @@ def remove():
     if request.method=='POST':
         _id = request.form['id']
         del get_db()[_id]
-        return redirect('/')
+        return jsonify(result='ok')
 
 @requires_authentication
 @app.route('/set', methods=['GET', 'POST'])
 def set_location():
-    """ sets a location ajax """
+    """ sets a location ajax
+
+        TODO: use set_factory to build this one too?
+    """
     if request.method == 'POST':
         db = get_db()
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
         data = dict(coords=coords, timestamp=date_str, tag='default')
         db[date_str] = data
-        return redirect('/')
-
-def get_db():
-    return setup()['coordinates']
+        return jsonify(result='ok')
 
 def set_factory(attr):
     """ """
@@ -135,36 +69,33 @@ def set_factory(attr):
             work the way it ought to.  hence we have to calculate 'attr'
             based on request path :(
         """
-        this_attr = request.url.split('/')[-1].split('_')[-1]
-        if request.method == 'POST':
+        try:
+            #this_attr = request.url.split('?')[0].split('/')[-1]
+            this_attr = urlparse.urlsplit(request.url).path.split('_')[-1]
+
             db    = get_db()
-            _id   = request.form['id']
-            report("in inner set with", [_id, this_attr, request.form.keys()])
-            label = request.form[this_attr]
+            _id   = request.args.get('id')
+            report("in inner set for attribute {A} on id {I} with value {V}".format(I=_id,
+                                                                                    A=this_attr,
+                                                                                    V=request.form.keys()))
+            #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+            label = request.args.get(this_attr)
             report("in inner set with", [label])
             update_db(db, _id, {this_attr:label})
-            return redirect('/')
+            return jsonify(result='ok')
+        except Exception, e:
+            traceback.print_exc(e)
     url    = '/set_' + attr
     setter = requires_authentication(setter)
-    setter = app.route(url, methods=['POST'])(setter)
+    setter = app.route(url)(setter)
     setter.attr = attr
     print " * built setter", [attr,url]
     return requires_authentication(setter)
 
 set_label = set_factory('label')
 set_tag   = set_factory('tag')
-couch     = setup()
 
-before_request = app.before_request(before_request)
-after_request  = app.after_request(after_request)
-login          = app.route('/login', methods=['GET', 'POST'])(login)
-logout         = app.route('/logout')(logout)
 
-x = """
-function(doc) {
-        if(doc.label=="default"){emit(null,doc);}
-        }
-"""
 if __name__=='__main__':
     # hook for to clean up the database by hand
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
