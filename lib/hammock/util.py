@@ -1,4 +1,4 @@
 """ hammock.util
 """
-def report(msg, vars):
+def report(msg, vars=[]):
     print msg,vars

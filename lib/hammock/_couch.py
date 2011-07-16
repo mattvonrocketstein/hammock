@@ -3,6 +3,9 @@
 from hammock.data import *
 from hammock.util import report
 
+def get_db():
+    return setup()['coordinates']
+
 def update_db(db, _id, dct):
     """  stupid.. have to delete and restore instead of update? """
     before = db[_id]
@@ -29,3 +32,14 @@ def handle_dirty_entry(_id):
     report('dirty entry in coordinates database.. removing it',[_id])
     db = couch['coordinates']
     del db[_id]
+
+def all_unique_tags():
+    return all_unique_attr('tag')
+
+def all_unique_attr(attrname):
+    q = '''function(doc){emit(null, doc.%s);}'''%attrname
+    return set([x.value for x in get_db().query(q)])
+
+def filter_where_tag_is(tag):
+    q = '''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
+    return [x.id for x in get_db().query(q)]
