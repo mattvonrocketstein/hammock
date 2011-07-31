@@ -8,13 +8,18 @@ def get_db():
 
 def update_db(db, _id, dct):
     """  stupid.. have to delete and restore instead of update? """
-    before = db[_id]
-    before = dict(before.items())
-    before.pop('_rev')
-    before.update(dct)
-    del db[_id]
-    db[_id] = before
-    report("updated {id} with new values for keys".format(id=_id), dct.keys())
+    print 'updating db',[db,_id,dct]
+    doc = db[_id]
+    print 'before',doc.items()
+    for x in dct:
+        doc[x]=dct[x]
+    #before = dict(before.items())
+    #before.pop('_rev')
+    #before.update(dct)
+    #del db[_id]
+    db[doc.id] = doc
+    print 'after', doc
+    report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
 
 def setup():
     """ couch-specific stuff """
