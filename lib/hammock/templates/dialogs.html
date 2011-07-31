@@ -27,10 +27,20 @@
 </div>
 
 <div class=dialog id="tag_dialog" title="Tag?">
-  <small>Tag for: <span id=tag_current_id>???</span></small>
+  <small>
+    <b>Tag for:</b> <span id=tag_current_id>???</span><br/>
+    <b>Currently:</b> <span id=tag_current>???</span><br/>
+    <b>Set:</b>&nbsp;
+    {%for tag in utags%}
+    <a href=javascript:$('#tag_input').val('{{tag}}');$('#tag_input').focus();void(0);>{{tag}}</a>
+    &nbsp;|&nbsp;
+    {%endfor%}
+</small>
   <br/>
-  <small>Currently: <span id=tag_current>???</span></small>
   <br/>
-  <br/>
-  <center><input id=tag_input style="width:150px;" type=text></center>
+  <center>
+    <input id=tag_input style="width:150px;" type=text>
+    <br/>
+  </center>
+
 </div>

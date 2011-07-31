@@ -8,8 +8,9 @@ import datetime
 import urlparse
 import traceback
 
-from flask import Flask, request, redirect, jsonify
-from werkzeug import check_password_hash, generate_password_hash
+from flask import Flask, request, jsonify
+#from flask import redirect
+#from werkzeug import check_password_hash, generate_password_hash
 
 from hammock.util import report
 from hammock.data import SECRET_KEY
