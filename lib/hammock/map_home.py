@@ -21,9 +21,9 @@ def slash():
     if use_tag:
         ROOT = filter_where_tag_is(use_tag)
     else:
-        ROOT = coordinates(db)#[:3]
+        ROOT = coordinates(db)[:3]
 
-    for _id in ROOT:
+    for _id in ROOT2:
         obj = db[_id]
         if 'coords' not in obj:
             handle_dirty_entry(_id)
