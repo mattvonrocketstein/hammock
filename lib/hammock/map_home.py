@@ -23,7 +23,7 @@ def slash():
     else:
         ROOT = coordinates(db)[:3]
 
-    for _id in ROOT2:
+    for _id in ROOT:
         obj = db[_id]
         if 'coords' not in obj:
             handle_dirty_entry(_id)
