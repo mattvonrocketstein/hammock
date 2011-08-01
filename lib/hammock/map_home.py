@@ -21,7 +21,7 @@ def slash():
     if use_tag:
         ROOT = filter_where_tag_is(use_tag)
     else:
-        ROOT = coordinates(db)[:3]
+        ROOT = coordinates(db)
 
     for _id in ROOT:
         obj = db[_id]
