@@ -71,7 +71,6 @@ def set_factory(attr):
             based on request path :(
         """
         try:
-            #this_attr = request.url.split('?')[0].split('/')[-1]
             this_attr = urlparse.urlsplit(request.url).path.split('_')[-1]
 
             db    = get_db()
@@ -79,8 +78,11 @@ def set_factory(attr):
             report("in inner set for attribute {A} on id {I} with value {V}".format(I=_id,
                                                                                     A=this_attr,
                                                                                     V=request.form.keys()))
-            #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+
             label = request.args.get(this_attr)
+            # 'or' needed because we don't want to set
+            # it as None if the ajax screws up
+            label = label or str(label)
             report("in inner set with", [label])
             update_db(db, _id, {this_attr:label})
             return jsonify(result='ok')
