@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-    TODO: use this stuff:
-
 """
 
 import datetime
@@ -9,14 +7,11 @@ import urlparse
 import traceback
 
 from flask import Flask, request, jsonify
-#from flask import redirect
-#from werkzeug import check_password_hash, generate_password_hash
 
 from hammock.util import report
-from hammock.data import SECRET_KEY
+from hammock.data import settings
 from hammock.auth import requires_authentication
 from hammock._couch import get_db, update_db, setup
-
 
 ## Begin database setup
 couch     = setup()
@@ -24,7 +19,7 @@ couch     = setup()
 ## Begin flask setup
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.secret_key = SECRET_KEY
+app.secret_key = settings['flask.secret_key']
 
 ## Begin flask plumbing
 from hammock.plumbing import before_request, after_request
@@ -97,8 +92,3 @@ def set_factory(attr):
 
 set_label = set_factory('label')
 set_tag   = set_factory('tag')
-
-
-if __name__=='__main__':
-    # hook for to clean up the database by hand
-    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()

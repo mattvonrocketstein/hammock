@@ -2,12 +2,15 @@
 """
 from flask import request, render_template, g
 
+from hammock.data import settings
 from hammock._math import box, calculate_center
-from hammock.data import DEFAULT_ZOOM, MAPS_API_KEY
 from hammock.auth import authenticated
 from hammock.rendering import render_control, tag2iconf
 from hammock._couch import coordinates, handle_dirty_entry
-from hammock._couch import all_unique_tags,filter_where_tag_is, get_db
+from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
+
+DEFAULT_ZOOM = settings['hammock.default_zoom']
+MAPS_API_KEY = settings['google.maps_key']
 
 def slash():
     """ the homepage:
@@ -35,6 +38,7 @@ def slash():
         tag     = obj.get('tag', 'default')
         iconf   = tag2iconf(tag)
         if authorized:
+            # TODO: move render_control and <b> stuff into templates..
             label   += render_control(_id, lat, lon, tag)
         points.append([lat,lon, label, iconf])
 
