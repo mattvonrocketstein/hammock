@@ -2,6 +2,9 @@
 
     You can override this file by using "hammock --settings=<path>"
 """
+import logging
+log = logging.getLogger(__file__)
+
 import os
 import ConfigParser
 import string
