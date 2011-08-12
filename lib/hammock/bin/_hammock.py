@@ -5,25 +5,25 @@
 """
 
 from optparse import OptionParser
-
-def parser():
-    """ builds the parser object """
-    class Parser(OptionParser):
-        def error(self, msg):
-            pass
-    parser = Parser()
-
-def PARSER():
-    p               = parser()
-    return p.parse_args()
-    #handle_main_argument(*PARSER())
+parser = OptionParser()
+parser.set_conflict_handler("resolve")
+parser.add_option("-u", "--user",    dest="user",   default='',     help="couchdb user",)
+parser.add_option("-p","--password", dest="passwd", default='',     help="couchdb password")
+parser.add_option("-h", "--host",    dest="host",   default='',     help="couchdb host")
+parser.add_option("--port",          dest="port",   default='5000', help="server listen port")
+parser.add_option("--shell",         dest="shell",  default=False,  help="db shell",
+                  action='store_true')
 
 def entry():
     """ Main entry point """
+    from hammock.data import Settings
     from hammock import app
-    #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-    #app.run()#def run(self, host='127.0.0.1', port=5000, **options):
-    app.run(host='0',port=5000)
+    options, args = parser.parse_args()
+    #Settings.load(
+    if options.shell:
+        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+    else:
+        app.run(host='0', port=int(options.port), debug=True)
 
 if __name__=='__main__':
     entry()

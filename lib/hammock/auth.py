@@ -1,5 +1,7 @@
 """ hammock/auth
 """
+from werkzeug import check_password_hash, generate_password_hash
+
 from flask import render_template, g, flash
 from flask import request, session, redirect
 from hammock.util import report
