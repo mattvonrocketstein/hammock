@@ -1,5 +1,8 @@
 """ /home/matt/code/hammock/lib/hammock/_couch.py
 """
+import logging
+log = logging.getLogger(__file__)
+
 from hammock.data import *
 from hammock.util import report
 from hammock.data import settings
@@ -18,10 +21,6 @@ def update_db(db, _id, dct):
     print 'before',doc.items()
     for x in dct:
         doc[x] = dct[x]
-    #before = dict(before.items())
-    #before.pop('_rev')
-    #before.update(dct)
-    #del db[_id]
     db[doc.id] = doc
     print 'after', doc
     report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())

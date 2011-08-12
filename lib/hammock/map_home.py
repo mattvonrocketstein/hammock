@@ -1,5 +1,8 @@
 """ hammock.map_home
 """
+import logging
+log = logging.getLogger(__file__)
+
 from flask import request, render_template, g
 
 from hammock.data import settings
@@ -9,14 +12,19 @@ from hammock.rendering import render_control, tag2iconf
 from hammock._couch import coordinates, handle_dirty_entry
 from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
 
+import logging
+log = logging.getLogger(__file__)
+
 DEFAULT_ZOOM = settings['hammock.default_zoom']
 MAPS_API_KEY = settings['google.maps_key']
+
 
 def slash():
     """ the homepage:
         renders all geocoordinates in coordinate database,
         along with labels.
     """
+
     db         = get_db()
     points     = []
     authorized = authenticated(g)

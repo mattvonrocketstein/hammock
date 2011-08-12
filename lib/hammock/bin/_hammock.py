@@ -3,6 +3,8 @@
 
     command line script
 """
+import logging
+log = logging.getLogger(__file__)
 
 from optparse import OptionParser
 parser = OptionParser()
