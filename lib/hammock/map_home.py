@@ -24,7 +24,7 @@ def slash():
         renders all geocoordinates in coordinate database,
         along with labels.
     """
-
+    print 'entering slash'
     db         = get_db()
     points     = []
     authorized = authenticated(g)
@@ -63,8 +63,8 @@ def slash():
     goto = request.args.get('goto') or None
     if goto:
         center_zoom = 3
-    try:
-        return render_template('index.html',
+    #try:
+    return render_template('index.html',
                            authenticated=authenticated(g),
                            points=points,
                            center_lat=center_lat,
@@ -75,5 +75,5 @@ def slash():
                            utags=all_unique_tags(),
                            goto = goto,
                            API_KEY=MAPS_API_KEY)
-    except:
-        print 'error rendering template'
+    #except:
+    #    print 'error rendering template'
