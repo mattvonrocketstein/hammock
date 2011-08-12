@@ -24,11 +24,27 @@ _ConfigDefault = {
     # MAPS_API_KEY
     'google.maps_key':'ABQIAAAAGGWUIcktQOU5Q76O6cV_BhRFeVNa246MatoBH1bx3V0-W8LG9hTZAWkoAFU1qTLCQuQOI0mPSlWsXQ',
     # DEFAULT_ZOOM
-    'hammock.default_zoom':6
+    'hammock.default_zoom':6,
+    'hammock.port':5000,
+    'hammock.host':'0',
     }
 
 class Settings(object):
     """ """
+
+    def __init__(self,parser):
+        self.options, self.args = parser.parse_args()
+        self._settings = self.load()
+
+        # a few command line options are allowed to override the .ini
+        if self.options.port:
+            self._settings.update({'hammock.port':self.options.port})
+
+        self.shell=self.options.shell
+
+    def __getitem__(self,k):
+        return self._settings[k]
+
     def load(self, file=None, config={}):
         """ returns a dictionary with key's of the form
             <section>.<option> and the values
@@ -44,6 +60,6 @@ class Settings(object):
             for opt in cp.options(sec):
                 config[name + "." + string.lower(opt)] = string.strip(cp.get(sec, opt))
         return config
-settings = Settings().load()
+
 if __name__=="__main__":
     print Settings().load("./hammock.ini", _ConfigDefault)
