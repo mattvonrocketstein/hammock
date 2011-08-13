@@ -7,22 +7,15 @@ from flask import request, g
 
 class FlaskView(object):
     """ """
-    def asdf__new__(kls, *args, **kargs):
-        """ """
-        if args or kargs:
-            raise NotImplemented
-        instance = object.__new__(kls)
-        instance.__name__ = kls.__name__.lower()
-        return instance
+    methods=('GET',)
 
     def __init__(self,app=None):
         """ """
         self.__name__=self.__class__.__name__.lower()
         if app is not None:
             if self.url:
-                app.add_url_rule(self.url, self.__name__, self)
-            else:
-                raise NotImplemented
+                app.add_url_rule(self.url, self.__name__, self,
+                                 methods=self.methods)
 
     def __call__(self):
         """ """
@@ -30,6 +23,10 @@ class FlaskView(object):
 
     def __getitem__(self, k):
         return request.values.get(k, None)
+
+    @property
+    def user(self):
+        return g.user
 
 class HammockView(FlaskView):
     @property

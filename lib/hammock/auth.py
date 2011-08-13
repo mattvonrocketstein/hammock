@@ -18,30 +18,39 @@ def requires_authentication(fxn):
             return result
     return new_fxn
 
-def logout():
-    """Logs the user out."""
-    flash('You were logged out')
-    session.pop('user_id', None)
-    return redirect('/')
+from hammock._flask import HammockView
 
-def login():
-    """ Logs the user in.
-        TODO: add back hashing after everything else is working
-    """
-    if g.user:
-        print g,g.user
+class Logout(HammockView):
+    """Logs the user out."""
+    url     = '/logout'
+    methods = ["GET"]
+    def main(self):
+        flash('You were logged out')
+        session.pop('user_id', None)
         return redirect('/')
-    error = None
-    if request.method == 'POST':
-        user = dict(user_id='superuser',pw_hash='test')
-        if user is None:
-            error = 'Invalid username'
-        elif not user['pw_hash']==request.form['password']:
-        #elif not check_password_hash(user['pw_hash'],
-        #                             request.form['password']):
-            error = 'Invalid password'
-        else:
-            flash('You were logged in')
-            session['user_id'] = user['user_id']
+
+class Login(HammockView):
+    url = '/login'
+    methods = methods = ["GET", "POST"]
+
+    def main(self):
+        """ Logs the user in.
+            TODO: add back hashing after everything else is working
+        """
+        if self.authorized:
+            print 'already authorized', self.user
             return redirect('/')
-    return render_template('login.html', error=error)
+        error = None
+        if request.method == 'POST':
+            user = dict(user_id='superuser',pw_hash='test')
+            if user is None:
+                error = 'Invalid username'
+            elif not user['pw_hash']==request.form['password']:
+            #elif not check_password_hash(user['pw_hash'],
+            #                             request.form['password']):
+                error = 'Invalid password'
+            else:
+                flash('You were logged in')
+                session['user_id'] = user['user_id']
+                return redirect('/')
+        return render_template('login.html', error=error)
