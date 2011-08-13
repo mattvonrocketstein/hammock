@@ -11,7 +11,7 @@ def get_db():
     try:
         return setup()[settings['hammock.coordinates_db_name']]
     except:
-        print "------- Could not retrieve couch handle! ------- "
+        print "\n\n------- Could not retrieve couch handle! ------- "
         raise
 
 def update_db(db, _id, dct):
@@ -40,7 +40,7 @@ def coordinates(db):
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it',[_id])
-    db = couch['coordinates']
+    db = couch[settings['hammock.coordinates_db_name']]
     del db[_id]
 
 def all_unique_tags():
