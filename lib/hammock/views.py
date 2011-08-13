@@ -9,7 +9,7 @@ import datetime
 import urlparse
 import traceback
 
-from flask import request, jsonify
+from flask import request
 
 from hammock.auth import requires_authentication
 from hammock.util import report
@@ -18,31 +18,34 @@ from hammock._couch import get_db, update_db
 from hammock._flask import HammockView
 
 class Remove(HammockView):
-    methods=['POST']
-    url = '/remove'
+    methods      = ['POST']
+    url          = '/remove'
+    returns_json = True
+
     def main(self):
-        _id = request.form['id']
-        del get_db()[_id]
-        return jsonify(result='ok')
+        del get_db()[self['id']]
+        return dict(result='ok')
 
 class Set_Location(HammockView):
     """ sets a location ajax
 
         TODO: use set_factory to build this one too?
     """
-    methods = ['POST']
-    url     =  '/set'
+    methods      = ['POST']
+    url          =  '/set'
+    returns_json = True
+
     def main(self):
         db = get_db()
-        date_str = str(datetime.datetime.now())
-        coords=request.form['coords'].replace('(','').replace(')','')
-        data = dict(coords=coords, timestamp=date_str, tag='recent')
+        date_str     = str(datetime.datetime.now())
+        coords       = request.form['coords'].replace('(','').replace(')','')
+        data         = dict(coords=coords, timestamp=date_str, tag='recent')
         db[date_str] = data
-        return jsonify(result='ok')
+        return dict(result='ok')
 
-def set_factory(attr,app):
-    """ """
-    def setter():
+class Setter(HammockView):
+    returns_json = True
+    def main(self):
         """ ajax -- sets an setter.attribute for a location
             flask does something weird so that this closure doesn't
             work the way it ought to.  hence we have to calculate 'attr'
@@ -63,12 +66,17 @@ def set_factory(attr,app):
             label = label or str(label)
             report("in inner set with", [label])
             update_db(db, _id, {this_attr:label})
-            return jsonify(result='ok')
+            return dict(result='ok')
         except Exception, e:
             traceback.print_exc(e)
-    url    = '/set_' + attr
-    setter = requires_authentication(setter)
-    setter = app.route(url)(setter)
-    setter.attr = attr
-    print " * built setter", [attr,url]
-    return requires_authentication(setter)
+
+def set_factory(attr):
+    """ """
+    MySetter=type('set_' + attr,
+                  (Setter,),
+                  dict(url  = '/set_' + attr,
+                       attr = attr)
+                  )
+    #TODO: setter = requires_authentication(setter)
+    print " * built setter", [MySetter,MySetter.url]
+    return MySetter

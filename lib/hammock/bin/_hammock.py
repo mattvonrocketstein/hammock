@@ -37,18 +37,10 @@ def go():
        Login,
        Logout,
        views.Remove,
-       views.Set_Location, ]
+       views.Set_Location,
+       views.set_factory('label'),
+       views.set_factory('tag')]
       ]
-    #views.remove = views.Remove(app=app)
-    #slash = Slash(app=app)
-    #logout = Logout(app=app)
-    #login = Login(app=app)
-    ## Begin flask views
-    ## begin using these instead.. app.add_url_rule('/', 'index', index)
-    #views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
-    #views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
-    views.set_label    = views.set_factory('label', app)
-    views.set_tag      = views.set_factory('tag', app)
     return app
 
 def entry():

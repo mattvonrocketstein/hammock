@@ -3,11 +3,12 @@
     Extensions for flask
 """
 
-from flask import request, g
+from flask import request, jsonify, g
 
 class FlaskView(object):
     """ """
-    methods=('GET',)
+    returns_json = False
+    methods      = ('GET',)
 
     def __init__(self,app=None):
         """ """
@@ -19,7 +20,10 @@ class FlaskView(object):
 
     def __call__(self):
         """ """
-        return self.main()
+        result = self.main()
+        if self.returns_json:
+            result = jsonify(**result)
+        return result
 
     def __getitem__(self, k):
         return request.values.get(k, None)
