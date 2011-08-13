@@ -4,7 +4,9 @@ from werkzeug import check_password_hash, generate_password_hash
 
 from flask import render_template, g, flash
 from flask import request, session, redirect
+
 from hammock.util import report
+from hammock._flask import HammockView
 
 def authenticated(g): return True if g.user else False
 
@@ -18,24 +20,26 @@ def requires_authentication(fxn):
             return result
     return new_fxn
 
-from hammock._flask import HammockView
-
 class Logout(HammockView):
     """Logs the user out."""
     url     = '/logout'
     methods = ["GET"]
+
     def main(self):
         flash('You were logged out')
         session.pop('user_id', None)
         return redirect('/')
 
 class Login(HammockView):
-    url = '/login'
-    methods = methods = ["GET", "POST"]
+    """ Logs the user in """
+    url      = '/login'
+    methods  = methods = ["GET", "POST"]
+    template = 'login.html'
 
     def main(self):
-        """ Logs the user in.
+        """
             TODO: add back hashing after everything else is working
+            TODO: convert to dispatch view
         """
         if self.authorized:
             print 'already authorized', self.user
@@ -53,4 +57,4 @@ class Login(HammockView):
                 flash('You were logged in')
                 session['user_id'] = user['user_id']
                 return redirect('/')
-        return render_template('login.html', error=error)
+        return render_template(self.template, error=error)

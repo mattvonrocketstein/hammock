@@ -32,16 +32,21 @@ def go():
 
     views.before_request = app.before_request(before_request)
     views.after_request  = app.after_request(after_request)
-
-    slash = Slash(app=app)
-    logout = Logout(app=app)
-    login = Login(app=app)
+    [ v(app=app) for v in
+      [Slash,
+       Login,
+       Logout,
+       views.Remove,
+       views.Set_Location, ]
+      ]
+    #views.remove = views.Remove(app=app)
+    #slash = Slash(app=app)
+    #logout = Logout(app=app)
+    #login = Login(app=app)
     ## Begin flask views
     ## begin using these instead.. app.add_url_rule('/', 'index', index)
-    #views.login        = app.route('/login', methods=['GET', 'POST'])(login)
-    #views.logout       = app.route('/logout')(logout)
-    views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
-    views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
+    #views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
+    #views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
     views.set_label    = views.set_factory('label', app)
     views.set_tag      = views.set_factory('tag', app)
     return app
