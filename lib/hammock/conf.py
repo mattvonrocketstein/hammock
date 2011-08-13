@@ -69,5 +69,5 @@ class Settings(object):
         for sec in cp.sections():
             name = sec.lower()
             for opt in cp.options(sec):
-                config[name + "." + string.lower(opt)] = string.strip(cp.get(sec, opt))
+                config[name + "." + opt.lower()] = cp.get(sec, opt).strip()
         return config

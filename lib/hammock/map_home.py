@@ -15,12 +15,10 @@ from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
 import logging
 log = logging.getLogger(__file__)
 
-DEFAULT_ZOOM = settings['hammock.default_zoom']
-MAPS_API_KEY = settings['google.maps_key']
-
 
 def slash():
     """ the homepage:
+
         renders all geocoordinates in coordinate database,
         along with labels.
     """
@@ -51,7 +49,7 @@ def slash():
         points.append([lat,lon, label, iconf])
 
     center      = request.values.get('center')
-    center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
+    center_zoom = request.values.get('zoom') or settings['hammock.default_zoom']
 
     if center:
         center_lat, center_lon = center.split(',')
@@ -63,7 +61,7 @@ def slash():
     goto = request.args.get('goto') or None
     if goto:
         center_zoom = 3
-    #try:
+
     return render_template('index.html',
                            authenticated=authenticated(g),
                            points=points,
@@ -74,6 +72,4 @@ def slash():
                            center_zoom=center_zoom,
                            utags=all_unique_tags(),
                            goto = goto,
-                           API_KEY=MAPS_API_KEY)
-    #except:
-    #    print 'error rendering template'
+                           API_KEY=settings['google.maps_key'])
