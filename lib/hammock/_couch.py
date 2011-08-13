@@ -9,7 +9,7 @@ from hammock.conf import settings
 
 def get_db():
     try:
-        return setup()['coordinates']
+        return setup()[settings['hammock.coordinates_db_name']]
     except:
         print "------- Could not retrieve couch handle! ------- "
         raise
