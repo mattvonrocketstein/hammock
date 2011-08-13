@@ -5,7 +5,7 @@ log = logging.getLogger(__file__)
 
 from flask import request, render_template, g
 
-from hammock.data import settings
+from hammock.conf import settings
 from hammock._math import box, calculate_center
 from hammock.auth import authenticated
 from hammock.rendering import render_control, tag2iconf
