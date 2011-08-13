@@ -1,3 +1,7 @@
+""" hammock.views
+
+    don't use settings in here! they aren't ready yet
+"""
 import logging
 log = logging.getLogger(__file__)
 

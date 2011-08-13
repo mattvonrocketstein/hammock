@@ -9,18 +9,19 @@ log = logging.getLogger(__file__)
 import datetime
 import urlparse
 import traceback
+from flask import Flask, request, jsonify
+
 from hammock.auth import requires_authentication
+from hammock.util import report
+from hammock.auth import login,logout
+from hammock.plumbing import before_request, after_request
 
 def go():
-    from flask import Flask, request, jsonify
 
-    from hammock.util import report
     from hammock.conf import settings
     from hammock._couch import get_db, update_db, setup
     from hammock import views
     from hammock.map_home import slash
-    from hammock.auth import login,logout
-    from hammock.plumbing import before_request, after_request
 
     ## Begin database setup
     couch     = setup()
@@ -35,13 +36,13 @@ def go():
 
     ## Begin flask views
     ## begin using these instead.. app.add_url_rule('/', 'index', index)
-    views.login          = app.route('/login', methods=['GET', 'POST'])(login)
-    views.logout         = app.route('/logout')(logout)
-    views.slash          = app.route('/')(slash)
-    views.remove = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
+    views.login        = app.route('/login', methods=['GET', 'POST'])(login)
+    views.logout       = app.route('/logout')(logout)
+    views.slash        = app.route('/')(slash)
+    views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
     views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
-    views.set_label = views.set_factory('label', app)
-    views.set_tag   = views.set_factory('tag', app)
+    views.set_label    = views.set_factory('label', app)
+    views.set_tag      = views.set_factory('tag', app)
     return app
 
 def entry():
