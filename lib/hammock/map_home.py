@@ -11,46 +11,42 @@ from hammock._couch import coordinates, handle_dirty_entry
 from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
 from hammock._flask import HammockView
 
+is_legal_coordinate_entry = lambda obj: 'coords' in obj
+obj2coords                = lambda obj: obj['coords'].split(',')
+obj2label                 = lambda obj: '<b>' + obj.get('label', 'label is empty') + '</b>'
+obj2primary_tag           = lambda obj: obj.get('tag', 'default') #only the first tag is used currently
 
 class Slash(HammockView):
-    """ """
-
-    url = '/'
-
+    url      = '/'
+    template = 'index.html'
     @property
     def center_zoom(self):
         """ """
         if self['goto']:
-            return 3
+            return self.settings['hammock.detail_zoom']
         return self['zoom'] or self.settings['hammock.default_zoom']
 
     @property
     def points(self):
-        """ """
+        """ TODO: move render_control and <b> stuff into templates """
         db         = get_db()
         points     = []
 
-        use_tag     = request.values.get('tag') or None
-        if use_tag:
-            ROOT = filter_where_tag_is(use_tag)
-        else:
-            ROOT = coordinates(db)
+        if self['tag']: ROOT = filter_where_tag_is(self['tag'])
+        else:           ROOT = coordinates(db)
 
         for _id in ROOT:
             obj = db[_id]
-            if 'coords' not in obj:
+            if not is_legal_coordinate_entry(obj):
                 handle_dirty_entry(_id)
-                continue
-            lat, lon = obj['coords'].split(',')
-            label    = '<b>' + obj.get('label', 'label is empty') + '</b>'
-
-            #only the first tag is used currently
-            tag     = obj.get('tag', 'default')
-            iconf   = tag2iconf(tag)
-            if self.authorized:
-                # TODO: move render_control and <b> stuff into templates..
-                label   += render_control(_id, lat, lon, tag)
-            points.append([lat, lon, label, iconf])
+            else:
+                lat, lon = obj2coords(obj)
+                label    = obj2label(obj)
+                tag      = obj2primary_tag(obj)
+                iconf    = tag2iconf(tag)
+                if self.authorized:
+                    label   += render_control(_id, lat, lon, tag)
+                points.append([lat, lon, label, iconf])
         return points
 
     def main(self):
@@ -68,7 +64,7 @@ class Slash(HammockView):
             center_lat, center_lon = calculate_center(points)
             minLat, minLng, maxLat, maxLng = box(points)
 
-        return render_template('index.html',
+        return render_template(self.template,
                                authenticated = self.authorized,
                                points        = points,
                                center_lat    = center_lat,

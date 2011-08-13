@@ -13,7 +13,7 @@ from flask import Flask, request, jsonify
 
 from hammock.auth import requires_authentication
 from hammock.util import report
-from hammock.auth import login,logout
+from hammock.auth import Login, Logout
 from hammock.plumbing import before_request, after_request
 
 def go():
@@ -34,10 +34,12 @@ def go():
     views.after_request  = app.after_request(after_request)
 
     slash = Slash(app=app)
+    logout = Logout(app=app)
+    login = Login(app=app)
     ## Begin flask views
     ## begin using these instead.. app.add_url_rule('/', 'index', index)
-    views.login        = app.route('/login', methods=['GET', 'POST'])(login)
-    views.logout       = app.route('/logout')(logout)
+    #views.login        = app.route('/login', methods=['GET', 'POST'])(login)
+    #views.logout       = app.route('/logout')(logout)
     views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
     views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
     views.set_label    = views.set_factory('label', app)

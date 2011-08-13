@@ -39,9 +39,9 @@ def coordinates(db):
 
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it',[_id])
+    report('dirty entry in coordinates database.. removing it (fake)',[_id])
     db = couch[settings['hammock.coordinates_db_name']]
-    del db[_id]
+    #del db[_id]
 
 def all_unique_tags():
     """ """
