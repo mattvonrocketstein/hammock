@@ -9,23 +9,13 @@ log = logging.getLogger(__file__)
 import datetime
 import urlparse
 import traceback
-from optparse import OptionParser
 from hammock.auth import requires_authentication
-parser = OptionParser()
-
-parser.set_conflict_handler("resolve")
-parser.add_option("--port",  dest="port",
-                  default='5000', help="server listen port")
-parser.add_option("--shell", dest="shell",
-                  default=False, help="hammock db shell",
-                  action='store_true')
 
 def go():
-
     from flask import Flask, request, jsonify
 
     from hammock.util import report
-    from hammock.data import settings
+    from hammock.conf import settings
     from hammock._couch import get_db, update_db, setup
     from hammock import views
     from hammock.map_home import slash
@@ -56,9 +46,9 @@ def go():
 
 def entry():
     """ Main entry point """
-    from hammock import data
-    settings = data.Settings(parser)
-    data.settings = settings
+    from hammock import conf
+    settings = conf.Settings()
+    conf.settings = settings
 
     if settings.shell:
         from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()

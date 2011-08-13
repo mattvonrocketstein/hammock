@@ -5,7 +5,7 @@ log = logging.getLogger(__file__)
 
 from hammock.data import *
 from hammock.util import report
-from hammock.data import settings
+from hammock.conf import settings
 
 def get_db():
     try:
