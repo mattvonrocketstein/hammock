@@ -17,11 +17,10 @@ from hammock.auth import login,logout
 from hammock.plumbing import before_request, after_request
 
 def go():
-
     from hammock.conf import settings
     from hammock._couch import get_db, update_db, setup
     from hammock import views
-    from hammock.map_home import slash
+    from hammock.map_home import Slash
 
     ## Begin database setup
     couch     = setup()
@@ -34,11 +33,11 @@ def go():
     views.before_request = app.before_request(before_request)
     views.after_request  = app.after_request(after_request)
 
+    slash = Slash(app=app)
     ## Begin flask views
     ## begin using these instead.. app.add_url_rule('/', 'index', index)
     views.login        = app.route('/login', methods=['GET', 'POST'])(login)
     views.logout       = app.route('/logout')(logout)
-    views.slash        = app.route('/')(slash)
     views.remove       = requires_authentication(app.route('/remove',methods=['POST'])(views.remove))
     views.set_location = requires_authentication(app.route('/set', methods=['GET', 'POST'])(views.set_location))
     views.set_label    = views.set_factory('label', app)
