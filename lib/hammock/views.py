@@ -15,21 +15,24 @@ from hammock.auth import requires_authentication
 from hammock.util import report
 from hammock._couch import get_db, update_db
 
+from hammock._flask import HammockView
 
-
-def remove():
-    """ remove a loction ajax """
-    if request.method=='POST':
+class Remove(HammockView):
+    methods=['POST']
+    url = '/remove'
+    def main(self):
         _id = request.form['id']
         del get_db()[_id]
         return jsonify(result='ok')
 
-def set_location():
+class Set_Location(HammockView):
     """ sets a location ajax
 
         TODO: use set_factory to build this one too?
     """
-    if request.method == 'POST':
+    methods = ['POST']
+    url     =  '/set'
+    def main(self):
         db = get_db()
         date_str = str(datetime.datetime.now())
         coords=request.form['coords'].replace('(','').replace(')','')
