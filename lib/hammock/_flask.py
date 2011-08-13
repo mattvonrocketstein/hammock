@@ -4,9 +4,10 @@
 """
 
 from flask import request, jsonify, g
+from flask import render_template
 
 class FlaskView(object):
-    """ """
+    """ encapsulates a few of the flask semantics into one object """
     returns_json = False
     methods      = ('GET',)
 
@@ -32,7 +33,15 @@ class FlaskView(object):
     def user(self):
         return g.user
 
+    def render_template(self, **kargs):
+        return render_template(self.template, **kargs)
+
 class HammockView(FlaskView):
+
+    def render_template(self, **kargs):
+     kargs.update(authenticated = self.authorized)
+     return super(HammockView,self).render_template(**kargs)
+
     @property
     def settings(self):
         """ cache this """

@@ -63,8 +63,8 @@ class Slash(HammockView):
         else:
             center_lat, center_lon = calculate_center(points)
             minLat, minLng, maxLat, maxLng = box(points)
-
-        return render_template(self.template,
+        #return render_template(self.template,
+        return self.render_template(
                                authenticated = self.authorized,
                                points        = points,
                                center_lat    = center_lat,
