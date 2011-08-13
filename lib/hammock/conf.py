@@ -10,11 +10,9 @@ DEFAULT_SETTINGS = os.path.abspath(os.path.join(os.path.split(__file__)[0], "ham
 
 class Settings(object):
     """ """
+
     from optparse import OptionParser
-
-
     parser = OptionParser()
-
     parser.set_conflict_handler("resolve")
     parser.add_option("--port",  dest="port",
                       default='', help="server listen port")
