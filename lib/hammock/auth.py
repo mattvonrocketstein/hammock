@@ -42,7 +42,7 @@ class Login(HammockView):
             TODO: convert to dispatch view
         """
         if self.authorized:
-            print 'already authorized', self.user
+            report('already authorized', self.user)
             return redirect('/')
         error = None
         if request.method == 'POST':

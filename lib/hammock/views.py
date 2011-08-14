@@ -2,17 +2,14 @@
 
     don't use settings in here! they aren't ready yet
 """
-import logging
-log = logging.getLogger(__file__)
-
 import datetime
 import urlparse
 import traceback
 
 from flask import request
 
-from hammock.auth import requires_authentication
 from hammock.util import report
+from hammock.auth import requires_authentication
 from hammock._couch import get_db, update_db
 
 from hammock._flask import HammockView
@@ -78,5 +75,5 @@ def set_factory(attr):
                        attr = attr)
                   )
     #TODO: setter = requires_authentication(setter)
-    print " * built setter", [MySetter,MySetter.url]
+    report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
     return MySetter
