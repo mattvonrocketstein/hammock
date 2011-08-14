@@ -1,8 +1,5 @@
 """ hammock.conf
 """
-import logging
-log = logging.getLogger(__file__)
-
 import os
 import ConfigParser
 

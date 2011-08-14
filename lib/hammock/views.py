@@ -9,15 +9,15 @@ import traceback
 from flask import request
 
 from hammock.util import report
-from hammock.auth import requires_authentication
 from hammock._couch import get_db, update_db
 
 from hammock._flask import HammockView
 
 class Remove(HammockView):
-    methods      = ['POST']
-    url          = '/remove'
-    returns_json = True
+    methods       = ['POST']
+    url           = '/remove'
+    returns_json  = True
+    requires_auth = True
 
     def main(self):
         del get_db()[self['id']]
@@ -28,10 +28,10 @@ class Set_Location(HammockView):
 
         TODO: use set_factory to build this one too?
     """
-    methods      = ['POST']
-    url          =  '/set'
-    returns_json = True
-
+    methods       = ['POST']
+    url           =  '/set'
+    returns_json  = True
+    requires_auth = True
     def main(self):
         db = get_db()
         date_str     = str(datetime.datetime.now())
@@ -41,7 +41,8 @@ class Set_Location(HammockView):
         return dict(result='ok')
 
 class Setter(HammockView):
-    returns_json = True
+    requires_auth = True
+    returns_json  = True
     def main(self):
         """ ajax -- sets an setter.attribute for a location
             flask does something weird so that this closure doesn't
@@ -74,6 +75,5 @@ def set_factory(attr):
                   dict(url  = '/set_' + attr,
                        attr = attr)
                   )
-    #TODO: setter = requires_authentication(setter)
     report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
     return MySetter
