@@ -11,18 +11,18 @@ def get_db():
     try:
         return setup()[settings['hammock.coordinates_db_name']]
     except:
-        print "\n\n------- Could not retrieve couch handle! ------- "
+        report("\n\n------- Could not retrieve couch handle! ------- ")
         raise
 
 def update_db(db, _id, dct):
     """  stupid.. have to delete and restore instead of update? """
-    print 'updating db',[db,_id,dct]
+    report('updating db',[db, _id, dct])
     doc = db[_id]
-    print 'before',doc.items()
+    report('before',doc.items())
     for x in dct:
         doc[x] = dct[x]
     db[doc.id] = doc
-    print 'after', doc
+    report('after', doc)
     report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
 
 def setup():

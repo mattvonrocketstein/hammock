@@ -1,5 +1,3 @@
 """ hammock.util
 """
-
-def report(msg, vars=[]):
-    print msg, vars
+from report import report as report

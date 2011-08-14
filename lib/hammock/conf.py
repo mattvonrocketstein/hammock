@@ -6,6 +6,8 @@ log = logging.getLogger(__file__)
 import os
 import ConfigParser
 
+from hammock.util import report
+
 DEFAULT_SETTINGS = os.path.abspath(os.path.join(os.path.split(__file__)[0], "hammock.ini"))
 
 class Settings(object):
@@ -47,9 +49,9 @@ class Settings(object):
             self._settings[k]=v.strip()
             if '#' in v:
                 self._settings[k]=v[:v.find('#')]
-        print ' * finished parsing settings from'
-        print '  + ',DEFAULT_SETTINGS
-        print '  + ',self.options.config
+        report('finished parsing settings from',
+               Global=DEFAULT_SETTINGS,
+               Local=self.options.config)
 
     def __getitem__(self,k):
         """ proxy to settings dictionary """
