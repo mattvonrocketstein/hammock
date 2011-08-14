@@ -8,18 +8,6 @@ from flask import request, session, redirect
 from hammock.util import report
 from hammock._flask import HammockView
 
-def authenticated(g): return True if g.user else False
-
-def requires_authentication(fxn):
-    def new_fxn(*args, **kargs):
-        if not g.user:
-            report('view requires authentication..redirecting to login',[fxn,g.user])
-            return redirect('/login')
-        else:
-            result = fxn(*args, **kargs)
-            return result
-    return new_fxn
-
 class Logout(HammockView):
     """Logs the user out."""
     url     = '/logout'

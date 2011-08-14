@@ -11,7 +11,6 @@ import urlparse
 import traceback
 from flask import Flask, request, jsonify
 
-from hammock.auth import requires_authentication
 from hammock.util import report
 from hammock.auth import Login, Logout
 from hammock.plumbing import before_request, after_request

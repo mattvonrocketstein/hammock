@@ -8,9 +8,10 @@ from flask import render_template
 
 class FlaskView(object):
     """ encapsulates a few of the flask semantics into one object """
-    returns_json = False
-    methods      = ('GET',)
 
+    returns_json  = False
+    methods       = ('GET',)
+    requires_auth = True
     def __init__(self,app=None):
         """ """
         self.__name__=self.__class__.__name__.lower()
@@ -21,6 +22,9 @@ class FlaskView(object):
 
     def __call__(self):
         """ """
+        if self.requires_auth and not self.authorized:
+            report('view requires authentication..redirecting to login',[self, g.user])
+            return redirect('/login')
         result = self.main()
         if self.returns_json:
             result = jsonify(**result)
@@ -33,8 +37,15 @@ class FlaskView(object):
     def user(self):
         return g.user
 
+    @property
+    def authorized(self):
+        """ """
+        return True if g.user else False
+
     def render_template(self, **kargs):
         return render_template(self.template, **kargs)
+
+from hammock.util import report
 
 class HammockView(FlaskView):
 
@@ -47,9 +58,3 @@ class HammockView(FlaskView):
         """ cache this """
         from hammock.conf import settings
         return settings
-
-    @property
-    def authorized(self):
-        """ """
-        from hammock.auth import authenticated
-        return authenticated(g)
