@@ -1,4 +1,4 @@
-""" hammock/plumbing
+""" hammock.plumbing
 """
 from flask import g
 from flask import session
