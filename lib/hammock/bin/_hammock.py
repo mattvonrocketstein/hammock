@@ -40,6 +40,11 @@ def go():
        views.set_factory('label'),
        views.set_factory('tag')]
       ]
+
+    @app.route("/favicon.ico")
+    def favicon():
+        return app.send_static_file("favicon.ico")
+
     return app
 
 def entry():

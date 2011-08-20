@@ -19,7 +19,10 @@ class Logout(HammockView):
         return redirect('/')
 
 class Login(HammockView):
-    """ Logs the user in """
+    """ Logs the user in.
+
+        TODO: send them back where they came from, and not to /
+    """
     url      = '/login'
     methods  = methods = ["GET", "POST"]
     template = 'login.html'
