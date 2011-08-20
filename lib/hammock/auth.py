@@ -6,7 +6,7 @@ from flask import render_template, g, flash
 from flask import request, session, redirect
 
 from hammock.util import report
-from hammock._flask import HammockView
+from hammock.corkscrew import HammockView
 
 class Logout(HammockView):
     """Logs the user out."""

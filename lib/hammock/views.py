@@ -11,7 +11,7 @@ from flask import request
 from hammock.util import report
 from hammock._couch import get_db, update_db
 
-from hammock._flask import HammockView
+from hammock.corkscrew import HammockView
 
 class Remove(HammockView):
     """
@@ -88,3 +88,14 @@ def set_factory(attr):
                   )
     report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
     return MySetter
+
+from hammock.map_home import Slash
+from hammock.auth import Login, Logout
+__views__= [ Slash,
+             Login,
+             Logout,
+             Remove,
+             Set_Location,
+             set_factory('label'),
+             set_factory('tag')
+             ]
