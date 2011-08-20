@@ -1,6 +1,6 @@
 flask
 couchdb
 # TODO:
-#https://github.com/mattvonrocketstein/reporting
+git+git://github.com/mattvonrocketstein/reporting.git#egg=reporting
 # required by reporting
 pygments
