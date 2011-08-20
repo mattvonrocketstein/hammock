@@ -11,9 +11,9 @@ from flask import request
 from hammock.util import report
 from hammock._couch import get_db, update_db
 
-from hammock.corkscrew import HammockView
+from corkscrew import View
 
-class Remove(HammockView):
+class Remove(View):
     """
     function do_remove(_id){
             $.ajax({
@@ -34,7 +34,7 @@ class Remove(HammockView):
         del get_db()[self['id']]
         return dict(result='ok')
 
-class Set_Location(HammockView):
+class Set_Location(View):
     """ sets a location ajax
 
         TODO: use set_factory to build this one too?
@@ -51,7 +51,7 @@ class Set_Location(HammockView):
         db[date_str] = data
         return dict(result='ok')
 
-class Setter(HammockView):
+class Setter(View):
     requires_auth = True
     returns_json  = True
     def main(self):

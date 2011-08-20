@@ -1,7 +1,5 @@
 flask
 couchdb
-# TODO:
 git+git://github.com/mattvonrocketstein/reporting.git#egg=reporting
-# required by reporting
-pygments
+pygments # required by reporting
 Importing==1.10

@@ -9,7 +9,7 @@ from flask import request, render_template
 from hammock._math import box, calculate_center
 from hammock._couch import coordinates, handle_dirty_entry
 from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
-from hammock.corkscrew import HammockView
+from corkscrew import View
 
 
 
@@ -23,7 +23,7 @@ def tag2iconf(tag):
     elif tag in ['hiking','outdoors']: return 'green'
     else:                              return 'blue'
 
-class Slash(HammockView):
+class Slash(View):
     url      = '/'
     template = 'index.html'
 

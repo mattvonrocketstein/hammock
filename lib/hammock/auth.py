@@ -6,9 +6,9 @@ from flask import render_template, g, flash
 from flask import request, session, redirect
 
 from hammock.util import report
-from hammock.corkscrew import HammockView
+from corkscrew import View
 
-class Logout(HammockView):
+class Logout(View):
     """Logs the user out."""
     url     = '/logout'
     methods = ["GET"]
@@ -18,7 +18,7 @@ class Logout(HammockView):
         session.pop('user_id', None)
         return redirect('/')
 
-class Login(HammockView):
+class Login(View):
     """ Logs the user in.
 
         TODO: send them back where they came from, and not to /

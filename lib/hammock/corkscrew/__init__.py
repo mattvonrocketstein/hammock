@@ -3,5 +3,5 @@
     Extensions for flask
 """
 
-from .settings import FlaskSettings
-from .views import HammockView
+from .settings import Settings
+from .views import View
