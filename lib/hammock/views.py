@@ -14,7 +14,7 @@ from hammock._couch import get_db, update_db
 from hammock._flask import HammockView
 
 class Remove(HammockView):
-    methods       = ['POST']
+    methods       = ['GET']
     url           = '/remove'
     returns_json  = True
     requires_auth = True

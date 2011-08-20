@@ -3,7 +3,7 @@
     Extensions for flask
 """
 
-from flask import request, jsonify, g
+from flask import request, jsonify, g, redirect
 from flask import render_template
 
 class FlaskView(object):
@@ -11,7 +11,8 @@ class FlaskView(object):
 
     returns_json  = False
     methods       = ('GET',)
-    requires_auth = True
+    requires_auth = False
+
     def __init__(self,app=None):
         """ """
         self.__name__=self.__class__.__name__.lower()
