@@ -1,2 +1,6 @@
 flask
 couchdb
+# TODO:
+#https://github.com/mattvonrocketstein/reporting
+# required by reporting
+pygments

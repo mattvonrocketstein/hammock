@@ -1,32 +1,37 @@
 """ /home/matt/code/hammock/lib/hammock/_couch.py
 """
+import logging
+log = logging.getLogger(__file__)
+
 from hammock.data import *
 from hammock.util import report
+from hammock.conf import settings
 
 def get_db():
-    return setup()['coordinates']
+    try:
+        return setup()[settings['hammock.coordinates_db_name']]
+    except:
+        report("\n\n------- Could not retrieve couch handle! ------- ")
+        raise
 
 def update_db(db, _id, dct):
     """  stupid.. have to delete and restore instead of update? """
-    print 'updating db',[db,_id,dct]
+    report('updating db',[db, _id, dct])
     doc = db[_id]
-    print 'before',doc.items()
+    report('before',doc.items())
     for x in dct:
-        doc[x]=dct[x]
-    #before = dict(before.items())
-    #before.pop('_rev')
-    #before.update(dct)
-    #del db[_id]
+        doc[x] = dct[x]
     db[doc.id] = doc
-    print 'after', doc
+    report('after', doc)
     report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
 
 def setup():
     """ couch-specific stuff """
     import couchdb
     global couch
-    couch = couchdb.Server(SERVER)
-    couch.resource.credentials = CREDENTIALS
+    couch = couchdb.Server(settings['couch.server'])
+    couch.resource.credentials = ( settings['couch.username'],
+                                   settings['couch.password'] )
     return couch
 
 def coordinates(db):
@@ -34,11 +39,12 @@ def coordinates(db):
 
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it',[_id])
-    db = couch['coordinates']
-    del db[_id]
+    report('dirty entry in coordinates database.. removing it (fake)',[_id])
+    db = couch[settings['hammock.coordinates_db_name']]
+    #del db[_id]
 
 def all_unique_tags():
+    """ """
     return all_unique_attr('tag')
 
 def all_unique_attr(attrname):
