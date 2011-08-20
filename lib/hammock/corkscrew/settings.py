@@ -99,7 +99,7 @@ class FlaskSettings(object):
         ## setup views
         view_holder = self['corkscrew.views']
         view_list = namedAny(view_holder)
-        [ v(app=app) for v in view_list]
+        [ v(app=app,settings=self) for v in view_list]
 
         @app.route("/favicon.ico")
         def favicon():
@@ -131,3 +131,4 @@ class FlaskSettings(object):
             app.run(host=self['flask.host'],
                     port=int(self['flask.port']),
                     debug=self['flask.debug'])
+Settings=FlaskSettings
