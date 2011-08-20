@@ -1,67 +1,99 @@
 """ hammock.map_home
 """
-from flask import request, render_template, g
+import logging
+log = logging.getLogger(__file__)
 
+from flask import request, render_template
+from jinja2 import Template
 from hammock._math import box, calculate_center
-from hammock.data import DEFAULT_ZOOM, MAPS_API_KEY
-from hammock.auth import authenticated
-from hammock.rendering import render_control, tag2iconf
 from hammock._couch import coordinates, handle_dirty_entry
-from hammock._couch import all_unique_tags,filter_where_tag_is, get_db
+from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
+from hammock._flask import HammockView
 
-def slash():
-    """ the homepage:
-        renders all geocoordinates in coordinate database,
-        along with labels.
-    """
-    db         = get_db()
-    points     = []
-    authorized = authenticated(g)
-    use_tag     = request.values.get('tag') or None
-    if use_tag:
-        ROOT = filter_where_tag_is(use_tag)
-    else:
-        ROOT = coordinates(db)
+is_legal_coordinate_entry = lambda obj: 'coords' in obj
+obj2coords                = lambda obj: obj['coords'].split(',')
+obj2label                 = lambda obj: obj.get('label', 'label is empty')
+obj2primary_tag           = lambda obj: obj.get('tag', 'default') #only the first tag is used currently
+def tag2iconf(tag):
+    """ convert tag to icon file """
+    if tag=='default':                 return 'yellow'
+    elif tag in ['hiking','outdoors']: return 'green'
+    else:                              return 'blue'
 
-    for _id in ROOT:
-        obj = db[_id]
-        if 'coords' not in obj:
-            handle_dirty_entry(_id)
-            continue
-        lat, lon = obj['coords'].split(',')
-        label    = '<b>' + obj.get('label', 'label is empty') + '</b>'
+class Slash(HammockView):
+    url      = '/'
+    template = 'index.html'
 
-        #only the first tag is used currently
-        tag     = obj.get('tag', 'default')
-        iconf   = tag2iconf(tag)
-        if authorized:
-            label   += render_control(_id, lat, lon, tag)
-        points.append([lat,lon, label, iconf])
+    @property
+    def smart_views(self):
+        """ views that understand/generate their own javascript counterparts """
+        from hammock import views
+        return [views.Remove]
 
-    center      = request.values.get('center')
-    center_zoom = request.values.get('zoom') or DEFAULT_ZOOM
+    @property
+    def control_js(self):
+        out = []
+        for view in self.smart_views:
+            view_js = Template(view.__doc__)
+            view_js = view_js.render(view_url=view.url)
+            out.append(view_js)
+        return '\n\n'.join(out)
 
-    if center:
-        center_lat, center_lon = center.split(',')
-        minLat, minLng, maxLat, maxLng = None, None, None, None
-    else:
-        center_lat, center_lon = calculate_center(points)
-        minLat, minLng, maxLat, maxLng = box(points)
+    @property
+    def center_zoom(self):
+        """ """
+        if self['goto']:
+            return self.settings['hammock.detail_zoom']
+        return self['zoom'] or self.settings['hammock.default_zoom']
 
-    goto = request.args.get('goto') or None
-    if goto:
-        center_zoom = 3
-    try:
-        return render_template('index.html',
-                           authenticated=authenticated(g),
-                           points=points,
-                           center_lat=center_lat,
-                           center_lon=center_lon,
-                           minLat=minLat, minLng=minLng,
-                           maxLat=maxLat, maxLng=maxLng,
-                           center_zoom=center_zoom,
-                           utags=all_unique_tags(),
-                           goto = goto,
-                           API_KEY=MAPS_API_KEY)
-    except:
-        print 'error rendering template'
+    @property
+    def points(self):
+        """ TODO: move render_control and <b> stuff into templates """
+        db         = get_db()
+        points     = []
+
+        if self['tag']: ROOT = filter_where_tag_is(self['tag'])
+        else:           ROOT = coordinates(db)
+
+        for _id in ROOT:
+            obj = db[_id]
+            if not is_legal_coordinate_entry(obj):
+                handle_dirty_entry(_id)
+            else:
+                lat, lon = obj2coords(obj)
+                label    = obj2label(obj)
+                tag      = obj2primary_tag(obj)
+                iconf    = tag2iconf(tag)
+                control = ''
+                #if self.authorized:
+                #    control = render_control(_id, lat, lon, tag)
+                points.append([_id, lat, lon, label, tag, control, iconf])
+        return points
+
+    def main(self):
+        """ the homepage:
+
+            renders all geocoordinates in coordinate database,
+            along with labels.
+        """
+        points = self.points
+        if self['center']:
+            # is this case still used?
+            center_lat, center_lon = self['center'].split(',')
+            minLat, minLng, maxLat, maxLng = None, None, None, None
+        else:
+            center_lat, center_lon = calculate_center(points)
+            minLat, minLng, maxLat, maxLng = box(points)
+        #return render_template(self.template,
+        return self.render_template(
+                               authenticated = self.authorized,
+                               points        = points,
+                               center_lat    = center_lat,
+                               center_lon    = center_lon,
+                               minLat        = minLat, minLng=minLng,
+                               maxLat        = maxLat, maxLng=maxLng,
+                               center_zoom   = self.center_zoom,
+                               utags         = all_unique_tags(),
+                               control_js    = self.control_js,
+                               goto          = self['goto'],
+                               API_KEY       = self.settings['google.maps_key'])
