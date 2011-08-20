@@ -14,6 +14,17 @@ from hammock._couch import get_db, update_db
 from hammock._flask import HammockView
 
 class Remove(HammockView):
+    """
+    function do_remove(_id){
+            $.ajax({
+                    type: "get",
+                    data : {id:_id},
+                    url: '{{view_url}}',
+                    success: function (data,text){alert('removed successfully');},
+                    error: efunc
+                    });
+    }
+    """
     methods       = ['GET']
     url           = '/remove'
     returns_json  = True

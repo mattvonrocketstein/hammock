@@ -4,7 +4,7 @@ import logging
 log = logging.getLogger(__file__)
 
 from flask import request, render_template
-
+from jinja2 import Template
 from hammock._math import box, calculate_center
 from hammock.rendering import render_control, tag2iconf
 from hammock._couch import coordinates, handle_dirty_entry
@@ -19,6 +19,22 @@ obj2primary_tag           = lambda obj: obj.get('tag', 'default') #only the firs
 class Slash(HammockView):
     url      = '/'
     template = 'index.html'
+
+    @property
+    def smart_views(self):
+        """ """
+        from hammock import views
+        return [views.Remove]
+
+    @property
+    def control_js(self):
+        out = []
+        for view in self.smart_views:
+            view_js = Template(view.__doc__)
+            view_js = view_js.render(view_url=view.url)
+            out.append(view_js)
+        return '\n\n'.join(out)
+
     @property
     def center_zoom(self):
         """ """
@@ -73,5 +89,6 @@ class Slash(HammockView):
                                maxLat        = maxLat, maxLng=maxLng,
                                center_zoom   = self.center_zoom,
                                utags         = all_unique_tags(),
+                               control_js    = self.control_js,
                                goto          = self['goto'],
                                API_KEY       = self.settings['google.maps_key'])
