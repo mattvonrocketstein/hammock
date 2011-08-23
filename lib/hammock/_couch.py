@@ -1,15 +1,15 @@
 """ /home/matt/code/hammock/lib/hammock/_couch.py
 """
-import logging
-log = logging.getLogger(__file__)
 
-from hammock.data import *
+from peak.util.imports import lazyModule
+
 from hammock.util import report
-from hammock.conf import settings
+
+conf = lazyModule('hammock.conf')
 
 def get_db():
     try:
-        return setup()[settings['hammock.coordinates_db_name']]
+        return setup()[conf.settings['hammock.coordinates_db_name']]
     except:
         report("\n\n------- Could not retrieve couch handle! ------- ")
         raise
@@ -29,9 +29,9 @@ def setup():
     """ couch-specific stuff """
     import couchdb
     global couch
-    couch = couchdb.Server(settings['couch.server'])
-    couch.resource.credentials = ( settings['couch.username'],
-                                   settings['couch.password'] )
+    couch = couchdb.Server(conf.settings['couch.server'])
+    couch.resource.credentials = ( conf.settings['couch.username'],
+                                   conf.settings['couch.password'] )
     return couch
 
 def coordinates(db):
@@ -40,7 +40,7 @@ def coordinates(db):
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (fake)',[_id])
-    db = couch[settings['hammock.coordinates_db_name']]
+    db = couch[conf.settings['hammock.coordinates_db_name']]
     #del db[_id]
 
 def all_unique_tags():
