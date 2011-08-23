@@ -10,7 +10,7 @@ def before_request():
     """
     g.user = None
     if 'user_id' in session:
-        g.user = 'superuser'
+        g.user = session['user_id']
 
 def after_request(response):
     """ nothing to do here so far. """
