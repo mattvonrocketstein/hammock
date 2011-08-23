@@ -9,6 +9,6 @@ class Settings(_Settings):
     def __init__(self,*args, **kargs):
         #ugh hack
         super(Settings,self).__init__(*args, **kargs)
-        from hammock.corkscrew.settings import settings
+        from corkscrew.settings import settings
         from hammock import conf
         conf.settings = self
