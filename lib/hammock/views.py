@@ -13,9 +13,10 @@ from report import report as report
 
 from hammock._couch import get_db, update_db
 
+class SmartView(View):
+    pass
 
-
-class Remove(View):
+class Remove(SmartView):
     """
     function do_remove(_id){
             $.ajax({
@@ -36,24 +37,9 @@ class Remove(View):
         del get_db()[self['id']]
         return dict(result='ok')
 
-class Set_Location(View):
-    """ sets a location ajax
-
-        TODO: use set_factory to build this one too?
+class Setter(SmartView):
     """
-    methods       = ['POST']
-    url           =  '/set'
-    returns_json  = True
-    requires_auth = True
-    def main(self):
-        db = get_db()
-        date_str     = str(datetime.datetime.now())
-        coords       = request.form['coords'].replace('(','').replace(')','')
-        data         = dict(coords=coords, timestamp=date_str, tag='recent')
-        db[date_str] = data
-        return dict(result='ok')
-
-class Setter(View):
+    """
     requires_auth = True
     returns_json  = True
     def main(self):
@@ -80,6 +66,24 @@ class Setter(View):
             return dict(result='ok')
         except Exception, e:
             traceback.print_exc(e)
+
+class Set_Location(View):
+    """ sets a location ajax
+
+        TODO: use set_factory to build this one too?
+    """
+    methods       = ['POST']
+    url           =  '/set'
+    returns_json  = True
+    requires_auth = True
+    def main(self):
+        db = get_db()
+        date_str     = str(datetime.datetime.now())
+        coords       = request.form['coords'].replace('(','').replace(')','')
+        data         = dict(coords=coords, timestamp=date_str, tag='recent')
+        db[date_str] = data
+        return dict(result='ok')
+
 
 def set_factory(attr):
     """ """
