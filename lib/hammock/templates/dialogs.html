@@ -1,22 +1,13 @@
 <div class=dialog id="label_dialog" title="Label?">
-  <small>Label for: <br/>
-    <table class=label_stuff>
-      <tr>
-        <td>
-          <span class=label_stuff id=label_current_id>???</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <span class=label_stuff id=label_coords>???</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <input id=label_input style="width:250px;" type=text>
-        </td>
-      </tr>
-    </table>
+  <small>
+    <b>Label for:</b> <span id=label_id>???</span><br/>
+    <b>Coordinates:</b> <span class=label_stuff id=label_coords>???</span><br/>
+    <b>Current label:</b> <span id=label_current>???</span><br/>
+
+
+    <center>
+      <input id=label_input style="width:250px;" type=text>
+    </center>
   <br/>  <br/>
   <center>
     <br/><br/>
@@ -28,8 +19,10 @@
 
 <div class=dialog id="tag_dialog" title="Tag?">
   <small>
-    <b>Tag for:</b> <span id=tag_current_id>???</span><br/>
+    <b>Tag for:</b> <span id=tag_id>???</span><br/>
+    <b>Coordinates:</b> <span id=tag_coords>???</span><br/>
     <b>Currently:</b> <span id=tag_current>???</span><br/>
+
     <b>Set:</b>&nbsp;
     {%for tag in utags%}
     <a href=javascript:$('#tag_input').val('{{tag}}');$('#tag_input').focus();void(0);>{{tag}}</a>
