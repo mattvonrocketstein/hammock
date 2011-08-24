@@ -7,11 +7,13 @@ import urlparse
 import traceback
 
 from flask import request
+from corkscrew import View
 
-from hammock.util import report
+from report import report as report
+
 from hammock._couch import get_db, update_db
 
-from corkscrew import View
+
 
 class Remove(View):
     """
