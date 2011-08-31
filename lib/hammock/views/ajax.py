@@ -1,41 +1,14 @@
-""" hammock.views
-
-    don't use settings in here! they aren't ready yet
 """
-import datetime
+"""
 import urlparse
 import traceback
-
 from flask import request
-from corkscrew import View
 
+from corkscrew import SmartView
 from report import report as report
 
 from hammock._couch import get_db, update_db
 
-class SmartView(View):
-    pass
-
-class Remove(SmartView):
-    """
-    function do_remove(_id){
-            $.ajax({
-                    type: "get",
-                    data : {id:_id},
-                    url: '{{view_url}}',
-                    success: function (data,text){alert('removed successfully');},
-                    error: efunc
-                    });
-    }
-    """
-    methods       = ['GET']
-    url           = '/remove'
-    returns_json  = True
-    requires_auth = True
-
-    def main(self):
-        del get_db()[self['id']]
-        return dict(result='ok')
 
 class Setter(SmartView):
     """
@@ -67,24 +40,6 @@ class Setter(SmartView):
         except Exception, e:
             traceback.print_exc(e)
 
-class Set_Location(View):
-    """ sets a location ajax
-
-        TODO: use set_factory to build this one too?
-    """
-    methods       = ['POST']
-    url           =  '/set'
-    returns_json  = True
-    requires_auth = True
-    def main(self):
-        db = get_db()
-        date_str     = str(datetime.datetime.now())
-        coords       = request.form['coords'].replace('(','').replace(')','')
-        data         = dict(coords=coords, timestamp=date_str, tag='recent')
-        db[date_str] = data
-        return dict(result='ok')
-
-
 def set_factory(attr):
     """ """
     MySetter=type('set_' + attr,
@@ -94,14 +49,3 @@ def set_factory(attr):
                   )
     report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
     return MySetter
-
-from hammock.map_home import Slash
-from hammock.auth import Login, Logout
-__views__= [ Slash,
-             Login,
-             Logout,
-             Remove,
-             Set_Location,
-             set_factory('label'),
-             set_factory('tag')
-             ]

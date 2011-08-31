@@ -30,8 +30,10 @@ class Slash(View):
     def smart_views(self):
         """ views that understand/generate their own javascript counterparts """
         from hammock import views
-        return [getattr(views, name) for name in dir(views)
-                if isinstance(getattr(views,name),views.SmartView)]
+        get = lambda name: getattr(views, name)
+        return [ get(name) for name in dir(views)
+                if get(name)!=views.SmartView and
+                 isinstance(get(name), views.SmartView)]
 
     @property
     def control_js(self):
