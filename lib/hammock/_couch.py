@@ -1,9 +1,9 @@
 """ /home/matt/code/hammock/lib/hammock/_couch.py
 """
 
+import couchdb
 from peak.util.imports import lazyModule
-
-from hammock.util import report
+from report import report as report
 
 conf = lazyModule('hammock.conf')
 
@@ -27,8 +27,6 @@ def update_db(db, _id, dct):
 
 def setup():
     """ couch-specific stuff """
-    import couchdb
-    global couch
     couch = couchdb.Server(conf.settings['couch.server'])
     couch.resource.credentials = ( conf.settings['couch.username'],
                                    conf.settings['couch.password'] )
@@ -39,8 +37,8 @@ def coordinates(db):
 
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it (fake)',[_id])
-    db = couch[conf.settings['hammock.coordinates_db_name']]
+    report('dirty entry in coordinates database.. removing it (faked)',[_id])
+    db = setup()[conf.settings['hammock.coordinates_db_name']]
     #del db[_id]
 
 def all_unique_tags():

@@ -1,3 +1,7 @@
+""" hammock._math
+
+    a bunch of hacks until i figure out how to use geocouch.
+"""
 def all_floats(points):
     _points = []
     for p in points:
