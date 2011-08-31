@@ -2,26 +2,25 @@
 """
 import logging
 log = logging.getLogger(__file__)
-
+from collections import defaultdict
 from jinja2 import Template
 from flask import request, render_template
+
+from corkscrew import View
 
 from hammock._math import box, calculate_center
 from hammock._couch import coordinates, handle_dirty_entry
 from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
-from corkscrew import View
-
-
 
 is_legal_coordinate_entry = lambda obj: 'coords' in obj
 obj2coords                = lambda obj: obj['coords'].split(',')
 obj2label                 = lambda obj: obj.get('label', 'label is empty')
 obj2primary_tag           = lambda obj: obj.get('tag', 'default') #only the first tag is used currently
-def tag2iconf(tag):
-    """ convert tag to icon file """
-    if tag=='default':                 return 'yellow'
-    elif tag in ['hiking','outdoors']: return 'green'
-    else:                              return 'blue'
+
+tag2iconf = defaultdict(lambda *args:'blue',
+                        {'default':'yellow',
+                         'hiking':'green',
+                         'outdoors':'green'})
 
 class Slash(View):
     url      = '/'
@@ -31,7 +30,8 @@ class Slash(View):
     def smart_views(self):
         """ views that understand/generate their own javascript counterparts """
         from hammock import views
-        return [views.Remove]
+        return [getattr(views, name) for name in dir(views)
+                if isinstance(getattr(views,name),views.SmartView)]
 
     @property
     def control_js(self):
@@ -66,10 +66,8 @@ class Slash(View):
                 lat, lon = obj2coords(obj)
                 label    = obj2label(obj)
                 tag      = obj2primary_tag(obj)
-                iconf    = tag2iconf(tag)
+                iconf    = tag2iconf[tag]
                 control = ''
-                #if self.authorized:
-                #    control = render_control(_id, lat, lon, tag)
                 points.append([_id, lat, lon, label, tag, control, iconf])
         return points
 
@@ -87,7 +85,6 @@ class Slash(View):
         else:
             center_lat, center_lon = calculate_center(points)
             minLat, minLng, maxLat, maxLng = box(points)
-        #return render_template(self.template,
         return self.render_template(
                                authenticated = self.authorized,
                                points        = points,

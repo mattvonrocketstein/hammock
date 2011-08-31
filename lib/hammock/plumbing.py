@@ -12,6 +12,4 @@ def before_request():
     if 'user_id' in session:
         g.user = session['user_id']
 
-def after_request(response):
-    """ nothing to do here so far. """
-    return response
+def after_request(response): return response
