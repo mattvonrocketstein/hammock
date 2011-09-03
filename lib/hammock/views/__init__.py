@@ -58,7 +58,10 @@ Login._template = """
 SetLabel = set_factory('label')
 SetTag   = set_factory('tag')
 
-__views__= [ Slash,
+from corkscrew.views import Favicon
+
+__views__= [ Favicon,
+             Slash,
              Login, Logout,
              Remove, SetLocation,
              SetLabel, SetTag ]
