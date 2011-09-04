@@ -16,7 +16,8 @@ class Setter(SmartView):
     requires_auth = True
     returns_json  = True
     def main(self):
-        """ ajax -- sets an setter.attribute for a location
+        """ ajax -- sets an attribute for a location
+
             flask does something weird so that this closure doesn't
             work the way it ought to.  hence we have to calculate 'attr'
             based on request path :(

@@ -7,13 +7,12 @@ from hammock._couch import get_db, update_db
 class Remove(SmartView):
     """
     function do_remove(_id){
-            $.ajax({
-                    type: "get",
-                    data : {id:_id},
-                    url: '{{view_url}}',
-                    success: function (data,text){alert('removed successfully');},
-                    error: efunc
-                    });
+       $.ajax({ type: "get",
+                data : {id:_id},
+                url: '{{view_url}}',
+                success: function (data,text){alert('removed successfully');},
+                error: efunc
+               });
     }
     """
     methods       = ['GET']

@@ -60,8 +60,12 @@ SetTag   = set_factory('tag')
 
 from corkscrew.views import Favicon
 
-__views__= [ Favicon,
-             Slash,
-             Login, Logout,
-             Remove, SetLocation,
-             SetLabel, SetTag ]
+__views__= [
+    # corkscrew standard views
+    Favicon, Login, Logout,
+
+    # hammock core
+    Slash,
+    Remove, SetLocation,
+    SetLabel, SetTag
+    ]
