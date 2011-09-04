@@ -37,7 +37,7 @@ input[type="submit"] {
 }
 
 div.page {
-    background: #CDC9C9;
+    background:white;
     border: 1px solid black;
     width: 700px;
     margin: 30px auto;
@@ -160,7 +160,7 @@ ul.flashes {
 }
 
 ul.flashes li {
-    background: #FFDEAD;
+    background: lightblue;
     border: 1px solid #81CEC6;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
