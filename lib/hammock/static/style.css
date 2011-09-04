@@ -1,5 +1,5 @@
 body {
-    background: #CAECE9;
+    background: #7AA9DD;
     font-family: 'Trebuchet MS', sans-serif;
     font-size: 14px;
 }
@@ -37,14 +37,14 @@ input[type="submit"] {
 }
 
 div.page {
-    background: white;
-    border: 1px solid #6ECCC4;
+    background: #CDC9C9;
+    border: 1px solid black;
     width: 700px;
     margin: 30px auto;
 }
 
 div.page h1 {
-    background: #6ECCC4;
+    background:#3D59AB;
     margin: 0;
     padding: 10px 14px;
     color: white;
@@ -54,7 +54,7 @@ div.page h1 {
 }
 
 div.page div.navigation {
-    background: #DEE9E8;
+    background: #9BC4E2;
     padding: 4px 10px;
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #eee;
@@ -76,6 +76,7 @@ div.page h2 {
 
 div.page div.body {
     padding: 10px;
+    background:white;
 }
 
 div.page div.footer {
@@ -159,7 +160,7 @@ ul.flashes {
 }
 
 ul.flashes li {
-    background: #B9F3ED;
+    background: #FFDEAD;
     border: 1px solid #81CEC6;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
