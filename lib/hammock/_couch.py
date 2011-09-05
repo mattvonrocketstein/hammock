@@ -1,4 +1,8 @@
-""" /home/matt/code/hammock/lib/hammock/_couch.py
+""" hammock._couch
+
+    couchdb specific helpers.
+
+    lots of this is pretty dumb, still need to figure out geocouch
 """
 
 import couchdb
@@ -21,24 +25,33 @@ def update_db(db, _id, dct):
     report('before',doc.items())
     for x in dct:
         doc[x] = dct[x]
+
+    # TODO: use db.update(doc) ?
     db[doc.id] = doc
+
     report('after', doc)
     report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
 
 def setup():
-    """ couch-specific stuff """
+    """ couch-specific stuff for hammock
+
+        currently, this function is called several times and recreating
+        the server object repeatedly because i'm not sure whether it
+        handles reconnections, etc.
+    """
     couch = couchdb.Server(conf.settings['couch.server'])
     couch.resource.credentials = ( conf.settings['couch.username'],
                                    conf.settings['couch.password'] )
     return couch
 
 def coordinates(db):
-    return filter(lambda x: not x.startswith('_'), db)
+    return (x for x in db.query('''function(doc){ emit(doc._id,doc);} '''))
+    #return filter(lambda x: not x.startswith('_'), db)
 
 def handle_dirty_entry(_id):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (faked)',[_id])
-    db = setup()[conf.settings['hammock.coordinates_db_name']]
+    db = get_db() #setup()[conf.settings['hammock.coordinates_db_name']]
     #del db[_id]
 
 def all_unique_tags():
