@@ -28,9 +28,14 @@ class BookList(DBView):
         <a href="/books?tag={{t}}">{{t}}</a> |
         {%endfor%}
         <hr/>
-        <table>
+        <table width=80%>
         {%for book in booklist%}
-        <tr><td>{{book.index}}. {{book.author}}: {{book.title}} <small>{{book.tags}}</small></td></tr>
+        <tr><td>
+        <small>{{book.index}}.</small>
+        </td><td>{{book.author}}: </td>
+        <td><b>{{book.title}}</b> </td>
+        <td><small>{{book.tags}}</small>
+        </td></tr>
         {%endfor%}
         </table>
         """
