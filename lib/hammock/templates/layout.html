@@ -9,9 +9,9 @@
 <div class=page>
   <h1>hammock</h1>
   <div class=navigation>
-    <a href="/">main</a> |
+    {%include "standard_header.html"%}
     {% if g.user %}
-    <a href="{{ url_for('logout') }}">sign out [{{ g.user }}]</a>
+    {%include "superuser.html"%}
     {% else %}
     <a href="{{ url_for('login') }}">sign in</a>
     {% endif %}

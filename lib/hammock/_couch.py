@@ -11,9 +11,10 @@ from report import report as report
 
 conf = lazyModule('hammock.conf')
 
-def get_db():
+def get_db(db_name=None):
+    db_name = db_name or conf.settings['hammock.coordinates_db_name']
     try:
-        return setup()[conf.settings['hammock.coordinates_db_name']]
+        return setup()[db_name]
     except:
         report("\n\n------- Could not retrieve couch handle! ------- ")
         raise
@@ -44,24 +45,31 @@ def setup():
                                    conf.settings['couch.password'] )
     return couch
 
-def coordinates(db):
-    return (x for x in db.query('''function(doc){ emit(doc._id,doc);} '''))
-    #return filter(lambda x: not x.startswith('_'), db)
-
-def handle_dirty_entry(_id):
+def handle_dirty_entry(_id, db_name=None):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (faked)',[_id])
-    db = get_db() #setup()[conf.settings['hammock.coordinates_db_name']]
+    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+    db = get_db(db_name) #setup()[conf.settings['hammock.coordinates_db_name']]
     #del db[_id]
 
-def all_unique_tags():
+def all_unique_tags(db_name=None):
     """ """
-    return all_unique_attr('tag')
+    return all_unique_attr('tag',db_name)
 
-def all_unique_attr(attrname):
+def all_unique_attr(attrname, db_name):
     q = '''function(doc){emit(null, doc.%s);}'''%attrname
-    return set([x.value for x in get_db().query(q)])
+    return set([x.value for x in get_db(db_name).query(q)])
 
-def filter_where_tag_is(tag):
+def filter_where_tag_is(tag, db_name):
     q = '''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
-    return [x.id for x in get_db().query(q)]
+    return [x.id for x in get_db(db_name).query(q)]
+
+from collections import namedtuple
+def document2namedt(doc):
+    """ """
+    doc=dict(doc.items())
+    doc.pop('_rev')
+    _id=doc.pop('_id')
+    doc['id']=_id
+    dnt = namedtuple('DynamicNamedTuple',' '.join(doc.keys()))
+    return dnt(**doc)

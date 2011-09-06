@@ -1,4 +1,6 @@
-"""
+""" hammock.views.ajax
+
+    Factory for ajax attribute-setters
 """
 import urlparse
 import traceback
@@ -15,6 +17,7 @@ class Setter(SmartView):
     """
     requires_auth = True
     returns_json  = True
+
     def main(self):
         """ ajax -- sets an attribute for a location
 
