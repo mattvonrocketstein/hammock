@@ -3,17 +3,15 @@
     don't use settings in here! they aren't ready yet
 """
 import datetime
-import urlparse
-import traceback
 
 from flask import request
 
-from corkscrew import SmartView,View
+from corkscrew import View
 from corkscrew.auth import Login, Logout
 from report import report as report
 
 from hammock.map_home import Slash
-from hammock._couch import get_db, update_db
+from hammock._couch import get_db
 
 from .remove import Remove
 from .ajax import set_factory
@@ -59,9 +57,20 @@ SetLabel = set_factory('label')
 SetTag   = set_factory('tag')
 
 from corkscrew.views import Favicon
+from .db import CouchView
+from .books import BookList
+__views__= [
+    # corkscrew standard views
+    Favicon, Login, Logout,
 
-__views__= [ Favicon,
-             Slash,
-             Login, Logout,
-             Remove, SetLocation,
-             SetLabel, SetTag ]
+    # hammock core
+    Slash,
+    Remove, SetLocation,
+    SetLabel, SetTag,
+
+    # trac replacements
+    BookList,
+
+    # couch views
+    CouchView,
+    ]

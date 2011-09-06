@@ -1,16 +1,16 @@
 """ hammock.map_home
 """
-import logging
-log = logging.getLogger(__file__)
 from collections import defaultdict
+
 from jinja2 import Template
-from flask import request, render_template
 
-from corkscrew import View
+from report import report as report
+from corkscrew import SmartView
 
+from hammock.views.db import DBView
 from hammock._math import box, calculate_center
-from hammock._couch import coordinates, handle_dirty_entry
-from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
+from hammock._couch import handle_dirty_entry
+from hammock._couch import all_unique_tags
 
 is_legal_coordinate_entry = lambda obj: 'coords' in obj
 obj2coords                = lambda obj: obj['coords'].split(',')
@@ -22,21 +22,22 @@ tag2iconf = defaultdict(lambda *args:'blue',
                          'hiking':'green',
                          'outdoors':'green'})
 
-class Slash(View):
+
+class Slash(DBView):
     url      = '/'
     template = 'index.html'
+    database_name = 'coordinates'
 
     @property
     def smart_views(self):
-        """ views that understand/generate their own javascript counterparts """
+        """ enumerate views that understand/generate their own javascript counterparts """
         from hammock import views
-        get = lambda name: getattr(views, name)
-        return [ get(name) for name in dir(views)
-                if get(name)!=views.SmartView and
-                 isinstance(get(name), views.SmartView)]
+        out = [ x for x in views.__views__ if issubclass(x, SmartView) and x.__doc__ ]
+        return out
 
     @property
     def control_js(self):
+        """ collects docstrings from the smart views to render control javascript """
         out = []
         for view in self.smart_views:
             view_js = Template(view.__doc__)
@@ -46,7 +47,7 @@ class Slash(View):
 
     @property
     def center_zoom(self):
-        """ """
+        """ decide on map zoom, depending on GET args and defaulting to settings"""
         if self['goto']:
             return self.settings['hammock.detail_zoom']
         return self['zoom'] or self.settings['hammock.default_zoom']
@@ -54,14 +55,8 @@ class Slash(View):
     @property
     def points(self):
         """ TODO: move render_control and <b> stuff into templates """
-        db         = get_db()
         points     = []
-
-        if self['tag']: ROOT = filter_where_tag_is(self['tag'])
-        else:           ROOT = coordinates(db)
-
-        for _id in ROOT:
-            obj = db[_id]
+        for _id, obj in self.rows:
             if not is_legal_coordinate_entry(obj):
                 handle_dirty_entry(_id)
             else:
@@ -69,8 +64,10 @@ class Slash(View):
                 label    = obj2label(obj)
                 tag      = obj2primary_tag(obj)
                 iconf    = tag2iconf[tag]
-                control = ''
-                points.append([_id, lat, lon, label, tag, control, iconf])
+                control  = ''
+                points.append([ _id, lat, lon,
+                                label, tag, control,
+                                iconf ])
         return points
 
     def main(self):
