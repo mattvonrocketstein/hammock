@@ -84,6 +84,10 @@ class DBView(View):
 
         #'''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
 
+    def _all_unique_attr(self, attrname):
+        q = '''function(doc){emit(null, doc.%s);}'''%attrname
+        return set([x.value for x in self._db.query(q)])
+
     def filter_where_tag_is(self, tag):
         """ NOTE: returns keys only! """
         q = self._tag_filter_function(tag)
