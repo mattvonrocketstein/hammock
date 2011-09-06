@@ -1,4 +1,7 @@
 """ hammock.views.books
+
+    http://blog.skitsanos.com/2009/11/jquerycouchjs-cheatsheet.html
+    http://stackoverflow.com/questions/5982638/using-cherrypy-cherryd-to-launch-multiple-flask-instances
 """
 
 from hammock._couch import document2namedt
@@ -21,3 +24,16 @@ class BookList(DBView):
         </table>
         """
         return dict(booklist=[document2namedt(obj) for k,obj in self.rows])
+tagger = lambda tag: """
+function(doc){
+function inside(needle,haystack) {
+        for(var i = 0; i < this.length; i++) {
+            if(this[i] === needle) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+if(doc.tag=='"""+tag+"""' or inside('"""+tag+"""',doc.tags)){emit(null, doc);}
+}"""
