@@ -10,10 +10,10 @@ from corkscrew import View
 
 from report import report as report
 
-from hammock._couch import get_db, setup, filter_where_tag_is
+from hammock._couch import get_db, setup
 
 
-from flask import render_template_string
+from flask import render_template_string, render_template
 
 def use_local_template(func):
     def fxn(*args, **kargs):
@@ -22,6 +22,7 @@ def use_local_template(func):
                    func.__doc__ + '</center>{%endblock%}'
         return render_template_string(template, **context)
     return fxn
+
 class memoized_property(object):
     """
     A read-only @property that is only evaluated once.
@@ -58,7 +59,7 @@ class DBView(View):
     def rows(self):
         db         = get_db(self.database_name)
         if self['tag']:
-            keys = filter_where_tag_is(self['tag'], self.database_name)
+            keys = self.filter_where_tag_is(self['tag'])
             queryset = (db[x] for x in keys)
             for row in queryset:
                 yield row.id, dict(row)
@@ -73,6 +74,20 @@ class DBView(View):
 
     @property
     def databases(self): return [ x for x in self.server ]
+
+    def _tag_filter_function(self, tag):
+        out = render_template('js/tag_query.js', tag=tag)
+        print '-'*70
+        print out
+        print '-'*70
+        return out
+
+        #'''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
+
+    def filter_where_tag_is(self, tag):
+        """ NOTE: returns keys only! """
+        q = self._tag_filter_function(tag)
+        return [ x.id for x in self._db.query(q) ]
 
 class CouchView(DBView):
     """ shows list of couch databases and detail views for each """
