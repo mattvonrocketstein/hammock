@@ -1,18 +1,16 @@
 """ hammock.map_home
 """
-import logging
-log = logging.getLogger(__file__)
-
 from collections import defaultdict
+
 from jinja2 import Template
-from flask import request, render_template
 
 from report import report as report
-from corkscrew import View, SmartView
+from corkscrew import SmartView
 
+from hammock.views.db import DBView
 from hammock._math import box, calculate_center
-from hammock._couch import coordinates, handle_dirty_entry
-from hammock._couch import all_unique_tags, filter_where_tag_is, get_db
+from hammock._couch import handle_dirty_entry
+from hammock._couch import all_unique_tags
 
 is_legal_coordinate_entry = lambda obj: 'coords' in obj
 obj2coords                = lambda obj: obj['coords'].split(',')
@@ -24,13 +22,15 @@ tag2iconf = defaultdict(lambda *args:'blue',
                          'hiking':'green',
                          'outdoors':'green'})
 
-class Slash(View):
+
+class Slash(DBView):
     url      = '/'
     template = 'index.html'
+    database_name = 'coordinates'
 
     @property
     def smart_views(self):
-        """ lists views that understand/generate their own javascript counterparts """
+        """ enumerate views that understand/generate their own javascript counterparts """
         from hammock import views
         out = [ x for x in views.__views__ if issubclass(x, SmartView) and x.__doc__ ]
         return out
@@ -55,14 +55,8 @@ class Slash(View):
     @property
     def points(self):
         """ TODO: move render_control and <b> stuff into templates """
-        db         = get_db()
         points     = []
-
-        if self['tag']: ROOT = filter_where_tag_is(self['tag'])
-        else:           ROOT = coordinates(db)
-
-        for _id in ROOT:
-            obj = db[_id]
+        for _id, obj in self.rows:
             if not is_legal_coordinate_entry(obj):
                 handle_dirty_entry(_id)
             else:
