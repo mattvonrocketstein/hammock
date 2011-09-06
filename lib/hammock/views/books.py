@@ -20,4 +20,4 @@ class BookList(DBView):
         {%endfor%}
         </table>
         """
-        return dict(booklist=[document2namedt(self._db[k]) for k in self._db])
+        return dict(booklist=[document2namedt(obj) for k,obj in self.rows])
