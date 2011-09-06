@@ -10,7 +10,6 @@ from corkscrew import SmartView
 from hammock.views.db import DBView
 from hammock._math import box, calculate_center
 from hammock._couch import handle_dirty_entry
-from hammock._couch import all_unique_tags
 
 is_legal_coordinate_entry = lambda obj: 'coords' in obj
 obj2coords                = lambda obj: obj['coords'].split(',')
@@ -27,6 +26,10 @@ class Slash(DBView):
     url      = '/'
     template = 'index.html'
     database_name = 'coordinates'
+
+    def _all_unique_tags(self):
+        """ """
+        return self._all_unique_attr('tag')
 
     @property
     def smart_views(self):
@@ -92,7 +95,7 @@ class Slash(DBView):
                                minLat        = minLat, minLng=minLng,
                                maxLat        = maxLat, maxLng=maxLng,
                                center_zoom   = self.center_zoom,
-                               utags         = all_unique_tags(),
+                               utags         = self._all_unique_tags(),
                                control_js    = self.control_js,
                                goto          = self['goto'],
                                API_KEY       = self.settings['google.maps_key'])

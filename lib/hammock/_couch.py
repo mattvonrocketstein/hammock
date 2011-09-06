@@ -52,14 +52,6 @@ def handle_dirty_entry(_id, db_name=None):
     db = get_db(db_name) #setup()[conf.settings['hammock.coordinates_db_name']]
     #del db[_id]
 
-def all_unique_tags(db_name=None):
-    """ """
-    return all_unique_attr('tag',db_name)
-
-def all_unique_attr(attrname, db_name):
-    q = '''function(doc){emit(null, doc.%s);}'''%attrname
-    return set([x.value for x in get_db(db_name).query(q)])
-
 from collections import namedtuple
 def document2namedt(doc):
     """ """
