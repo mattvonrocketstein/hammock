@@ -60,10 +60,6 @@ def all_unique_attr(attrname, db_name):
     q = '''function(doc){emit(null, doc.%s);}'''%attrname
     return set([x.value for x in get_db(db_name).query(q)])
 
-def filter_where_tag_is(tag, db_name):
-    q = '''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
-    return [x.id for x in get_db(db_name).query(q)]
-
 from collections import namedtuple
 def document2namedt(doc):
     """ """
