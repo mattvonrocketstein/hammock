@@ -58,7 +58,7 @@ SetTag   = set_factory('tag')
 
 from corkscrew.views import Favicon
 from .db import CouchView
-from .books import BookList
+from .books import BookList,BookUpdate
 __views__= [
     # corkscrew standard views
     Favicon, Login, Logout,
@@ -69,7 +69,7 @@ __views__= [
     SetLabel, SetTag,
 
     # trac replacements
-    BookList,
+    BookList, BookUpdate,
 
     # couch views
     CouchView,
