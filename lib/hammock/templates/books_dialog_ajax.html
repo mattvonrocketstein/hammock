@@ -1,0 +1,41 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<form method=POST action="/books/update">
+<table>
+  <tr>
+    <td>
+      <b>Label</b></td>
+    <td>
+      <span id=label_id>{{id}}</span>
+    </td>
+  </tr>
+  {% for x,y in obj %}
+  <tr>
+    <td>
+      <b>{{x}}:</b>
+    </td>
+    <td>
+      <input id=input_{{x}} style="width:250px;" value="{{y}}" type=text>
+    </td>
+  </tr>
+  {%endfor%}
+</table>
+<a href=javascript:do_save()>save</a>
+<script>
+  {%include "everything.js" %}
+  function do_save(){
+  var updated={
+        'id' : '{{id}}',
+  {% for x,y in obj %}
+               '{{x}}' : $('#input_{{x}}').val(){%if not loop.last%},{%endif%}
+               {%endfor%}
+              };
+            $.ajax({
+                    type: "get",
+                    data:updated,
+                    url: "/books/update",
+                    success: function(data,text){window.location='/books';},
+                    error: efunc
+                    });
+
+  }
+</script>
