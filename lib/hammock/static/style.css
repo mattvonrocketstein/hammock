@@ -12,6 +12,10 @@ a:hover {
     color: #333;
 }
 
+.bookDialog {
+    background:#EEE9E9;
+}
+
 input[type="text"],
 input[type="password"] {
     background: white;
