@@ -11,29 +11,10 @@ from corkscrew.auth import Login, Logout
 from report import report as report
 
 from hammock.map_home import Slash
-from hammock._couch import get_db
 
 from .remove import Remove
 from .ajax import set_factory
-
-
-class SetLocation(View):
-    """ sets a location ajax
-
-        TODO: use set_factory to build this one too?
-    """
-    methods       = ['POST']
-    url           =  '/set'
-    returns_json  = True
-    requires_auth = True
-
-    def main(self):
-        db = get_db()
-        date_str     = str(datetime.datetime.now())
-        coords       = request.form['coords'].replace('(','').replace(')','')
-        data         = dict(coords=coords, timestamp=date_str, tag='recent')
-        db[date_str] = data
-        return dict(result='ok')
+from .set_location import SetLocation
 
 Login._template = """
 {% extends "layout.html" %}

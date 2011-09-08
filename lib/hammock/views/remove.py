@@ -2,9 +2,11 @@
 """
 
 from corkscrew import SmartView
-from hammock._couch import get_db, update_db
 
-class Remove(SmartView):
+from hammock._couch import update_db
+from .db import DBView
+
+class Remove(SmartView, DBView):
     """
     function do_remove(_id){
        $.ajax({ type: "get",
@@ -19,7 +21,8 @@ class Remove(SmartView):
     url           = '/remove'
     returns_json  = True
     requires_auth = True
+    database_name = 'coordinates'
 
     def main(self):
-        del get_db()[self['id']]
+        del self._db[self['id']]
         return dict(result='ok')
