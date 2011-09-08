@@ -13,6 +13,10 @@ conf = lazyModule('hammock.conf')
 
 class Database(couchdb.client.Database):
     """ """
+    def _all_unique_attr(self, attrname):
+        q = '''function(doc){emit(null, doc.%s);}'''%attrname
+        return set([x.value for x in self.query(q)])
+
     def all(self):
         """ return iterator for all rows """
         query = '''function(doc){ emit(doc._id,doc);} '''
@@ -33,8 +37,8 @@ class Server(couchdb.Server):
         return db
 
 
-def get_db(db_name=None):
-    db_name = db_name or conf.settings['hammock.coordinates_db_name']
+def get_db(db_name):
+    db_name = db_name
     try:
         return setup()[db_name]
     except:
