@@ -28,8 +28,9 @@ class Slash(DBView):
     database_name = 'coordinates'
 
     def _all_unique_tags(self):
-        """ """
-        return self._all_unique_attr('tag')
+        """ TODO: this can go away after coordinates is using 'tags' instead of 'tag'
+        """
+        return self._db._all_unique_attr('tag')
 
     @property
     def smart_views(self):
