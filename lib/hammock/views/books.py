@@ -29,7 +29,8 @@ class BookList(DBView):
         return out
 
     @property
-    def new_empty_entry(self):
+    def schema(self):
+        """ returns a new, empty entry for the books database """
         return dict(author='',
                     tags=[],
                     title='',
@@ -39,10 +40,10 @@ class BookList(DBView):
     def edit(self):
         _id = self['id']
         if _id=='new':
-            entry = self.new_empty_entry      # as dictionary
-            _id = entry['stamp']
-            self._db[_id] = entry  # save it..
-            entry = self._db[_id]  # as document
+            entry = self.schema     # as dictionary
+            _id = entry['stamp']    # get new items key.
+            self._db[_id] = entry   # save it..
+            entry = self._db[_id]   # as document
         else:
             try:
                 entry = self._db[_id]
@@ -61,6 +62,7 @@ class BookList(DBView):
                                booklist=[document2namedt(obj) for k,obj in self.rows])
 
     def main(self):
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         return self.edit() if self['id'] else self.list()
 
 class BookUpdate(BookList):
