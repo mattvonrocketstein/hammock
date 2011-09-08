@@ -9,14 +9,15 @@ from flask import request
 from corkscrew import SmartView
 from report import report as report
 
-from hammock._couch import get_db, update_db
+from hammock._couch import update_db
+from .db import DBView
 
-
-class Setter(SmartView):
+class Setter(SmartView, DBView):
     """
     """
     requires_auth = True
     returns_json  = True
+    database_name = 'coordinates'
 
     def main(self):
         """ ajax -- sets an attribute for a location
@@ -28,11 +29,12 @@ class Setter(SmartView):
         try:
             this_attr = urlparse.urlsplit(request.url).path.split('_')[-1]
 
-            db    = get_db()
+            db    = self._db
             _id   = request.args.get('id')
-            report("in inner set for attribute {A} on id {I} with value {V}".format(I=_id,
-                                                                                    A=this_attr,
-                                                                                    V=request.form.keys()))
+            msg = "in inner set for attribute {A} on id {I} with value {V}"
+            report(msg.format(I=_id,
+                              A=this_attr,
+                              V=request.form.keys()))
 
             label = request.args.get(this_attr)
             # 'or' needed because we don't want to set

@@ -10,8 +10,8 @@ from corkscrew import View
 
 from report import report as report
 
-from hammock._couch import get_db, setup
-
+from hammock._couch import get_db, Server
+from hammock.utils import memoized_property
 
 from flask import render_template_string, render_template
 
@@ -23,23 +23,6 @@ def use_local_template(func):
         return render_template_string(template, **context)
     return fxn
 
-class memoized_property(object):
-    """
-    A read-only @property that is only evaluated once.
-
-    From: http://www.reddit.com/r/Python/comments/ejp25/cached_property_decorator_that_is_memory_friendly/
-    """
-    def __init__(self, fget, doc=None):
-        self.fget = fget
-        self.__doc__ = doc or fget.__doc__
-        self.__name__ = fget.__name__
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        obj.__dict__[self.__name__] = result = self.fget(obj)
-        return result
-
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
     database_name = None
@@ -47,30 +30,24 @@ class DBView(View):
     @memoized_property
     def _db(self):
         """ not sure yet whether caching this is safe.  we shall see """
-        return get_db(self.database_name)
-
-    @property
-    def _all_rows(self):
-        print "getting all rows"
-        query = '''function(doc){ emit(doc._id,doc);} '''
-        return (x for x in self._db.query(query))
+        return self.server[self.database_name]
 
     @property
     def rows(self):
-        db         = get_db(self.database_name)
+        db         = self._db
         if self['tag']:
             keys = self.filter_where_tag_is(self['tag'])
-            queryset = (db[x] for x in keys)
+            queryset = (self._db[x] for x in keys)
             for row in queryset:
                 yield row.id, dict(row)
 
         else:
-            queryset = self._all_rows
+            queryset = self._db.all()
             for row in queryset:
                 yield row.id, row.value
 
     @memoized_property
-    def server(self): return setup()
+    def server(self): return Server()
 
     @property
     def databases(self): return [ x for x in self.server ]
