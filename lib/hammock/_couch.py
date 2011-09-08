@@ -60,7 +60,7 @@ setup=Server
 def handle_dirty_entry(_id, db_name=None):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (faked)',[_id])
-    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+    #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
     db = get_db(db_name)
     #del db[_id]
 
