@@ -13,6 +13,15 @@ from hammock._couch import document2namedt
 from hammock.views.db import DBView, use_local_template
 from report import report
 
+from hammock._couch import Schema, resolve_schema
+
+class BookSchema(Schema):
+    author = ''
+    title  = ''
+    tags   = []
+    stamp  = lambda: str(datetime.datetime.utcnow())
+    index  = 0
+
 class BookList(DBView):
     """ partial replacement  for reader.zgct """
 
@@ -31,11 +40,9 @@ class BookList(DBView):
     @property
     def schema(self):
         """ returns a new, empty entry for the books database """
-        return dict(author='',
-                    tags=[],
-                    title='',
-                    index=len(list(self.rows)),
-                    stamp=str(datetime.datetime.utcnow()))
+        schema = resolve_schema(BookSchema)
+        schema.update(index=len(list(self.rows)))
+        return schema
 
     def edit(self):
         _id = self['id']

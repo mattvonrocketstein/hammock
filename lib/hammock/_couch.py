@@ -29,6 +29,8 @@ class Server(couchdb.Server):
         super(Server,self).__init__(conf.settings['couch.server'])
         self.resource.credentials = ( conf.settings['couch.username'],
                                       conf.settings['couch.password'] )
+        self.resource.http.add_credentials(*self.resource.credentials)
+
     def __getitem__(self, name):
         from couchdb.client import validate_dbname, uri
         db = Database(uri(self.resource.uri, name), validate_dbname(name),
@@ -77,3 +79,16 @@ def document2namedt(doc):
     doc['id']=_id
     dnt = namedtuple('DynamicNamedTuple',' '.join(doc.keys()))
     return dnt(**doc)
+
+from hammock.utils import AllStaticMethods
+class Schema(object):
+    __metaclass__=AllStaticMethods
+
+def resolve_schema(schema):
+    schema=schema()
+    out = [[x,getattr(schema,x)] for x in filter(lambda x: not x.startswith('_'), dir(schema))]
+    out = dict(out)
+    for x in out:
+        if callable(out[x]):
+            out[x]=out[x]()
+    return out
