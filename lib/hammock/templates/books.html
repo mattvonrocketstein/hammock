@@ -1,21 +1,49 @@
 {%extends "layout.html" %}
 {%block body%}
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<table width=100%>
+  <tr>
+    <td align=left>
+      <a href="javascript:$('#all_tags').toggle();void(0);">filter by tags</a>
+      {% if authenticated %} |         <a href="javascript:edit_entry('new');void(0);">Create new</a> {% endif %}
+    </td>
+    <td align=right>
+      count: {{booklist|length}}
+    </td>
+  </tr>
+  <tr id=all_tags>
+    <td colspan=2>
+      <hr>
+      {%for t in tags%}
+      <a href="/books?tag={{t}}">{{t}}</a> |
+      {%endfor%}
+    </td>
+  </tr>
+</table>
+<hr>
+
 <center>
-  tags: {%for t in tags%}
-  <a href="/books?tag={{t}}">{{t}}</a> |
-  {%endfor%}
-  <hr/>
-  <table width=96%>
+  <table>
+    <tr>
+      <th align=left>author</th>
+      <th align=left>title</th>
+      <th align=left>tags</th>
+      {%if authenticated%}<th>&nbsp;</th>{%endif%}
+    </tr>
     {%for book in booklist%}
     <tr>
-      <td> <small>{{book.index}}.</small> </td>
       <td>{{book.author}}: </td>
       <td><b>{{book.title}}</b> </td>
-      <td><small>{{book.tags}}</small></td>
+      <td>
+        <small>
+          {% for t in book.tags%}
+          <a href="/books?tag={{t}}">{{t}}</a>{%if not loop.last%}, {%endif%}
+          {%endfor%}
+        </small>
+      </td>
       {%if authenticated%}
       <td>
-        <a href="javascript:doit('{{book.id}}');void(0);">edit</a>
+        <a href="javascript:edit_entry('{{book.id}}');void(0);">edit</a>
       </td>
       {%endif%}
     </tr>
@@ -23,16 +51,13 @@
   </table>
 </center>
 
-<div class=dialog id="label_dialog" title="EditBook">
-  <div id=doomwagon></div>
-</div>
-<script>
-function doit(name){
-    $('#doomwagon').load('/books',{id:name},function(){$('#label_dialog').dialog('open');});
+<div class=dialog id="edit_dialog" title="EditItem"> <div id=bookholder></div> </div>
 
-}
-$(document).ready(function() {
-        $(".dialog").dialog({ autoOpen: false});
-    });
+<script>
+  function edit_entry(name){
+  $('#bookholder').load('/books',{id:name},function(){$('#edit_dialog').dialog('open');});
+  }
+  $(document).ready(function() { $(".dialog").dialog({ autoOpen: false}); });
+  $(document).ready(function() { $("#all_tags").hide(); });
 </script>
 {%endblock%}'
