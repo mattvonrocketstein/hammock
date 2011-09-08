@@ -21,6 +21,8 @@ class BookList(DBView):
     methods       = ['GET', 'POST']
 
     def _all_unique_tags(self):
+        """ TODO: remove when coordinates-db supports "tags" instead of just "tag"
+        """
         q = '''function(doc){emit(null, doc.%s);}'''%'tags'
         out = reduce(lambda x,y: x+y,[x.value for x in self._db.query(q)])
         out = set(out)
@@ -46,7 +48,6 @@ class BookList(DBView):
                 entry = self._db[_id]
             except ResourceNotFound,e:
                 report('resource with key "{id}" not found',id=_id)
-                from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
                 raise
 
         obj = [ x for x in entry.items() if not x[0].startswith('_') ]
