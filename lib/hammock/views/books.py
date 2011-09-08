@@ -6,14 +6,15 @@
 """
 import datetime
 
-from flask import request, render_template
+from flask import request, render_template, redirect
 from couchdb.client import ResourceNotFound
 
-from hammock._couch import document2namedt
-from hammock.views.db import DBView, use_local_template
 from report import report
 
-from hammock._couch import Schema, resolve_schema
+from hammock._couch import document2namedt
+from hammock._couch import Schema
+from hammock.views.db import DBView, use_local_template
+
 
 class BookSchema(Schema):
     author = ''
@@ -22,54 +23,50 @@ class BookSchema(Schema):
     stamp  = lambda: str(datetime.datetime.utcnow())
     index  = 0
 
+class QuoteSchema(BookSchema):
+    source = ''
+    format = 'raw'
+
 class BookList(DBView):
     """ partial replacement  for reader.zgct """
 
     url           = '/books'
     database_name = 'books'
     methods       = ['GET', 'POST']
+    template      = 'books.html'
+    edit_template = 'books_dialog_ajax.html'
+    db_schema     = BookSchema
 
-    def _all_unique_tags(self):
-        """ TODO: remove when coordinates-db supports "tags" instead of just "tag"
-        """
-        q = '''function(doc){emit(null, doc.%s);}'''%'tags'
-        out = reduce(lambda x,y: x+y,[x.value for x in self._db.query(q)])
-        out = set(out)
-        return out
-
-    @property
     def schema(self):
         """ returns a new, empty entry for the books database """
-        schema = resolve_schema(BookSchema)
+        schema = super(BookList,self).schema()
         schema.update(index=len(list(self.rows)))
         return schema
 
-    def edit(self):
-        _id = self['id']
-        if _id=='new':
-            entry = self.schema     # as dictionary
-            _id = entry['stamp']    # get new items key.
-            self._db[_id] = entry   # save it..
-            entry = self._db[_id]   # as document
-        else:
-            try:
-                entry = self._db[_id]
-            except ResourceNotFound,e:
-                report('resource with key "{id}" not found',id=_id)
-                raise
+    def build_new_entry(self):
+        """ almost ready to be promoted to DBView """
+        entry = self.schema()   # as dictionary
+        _id = entry['stamp']    # get new items key.
+        self._db[_id] = entry   # save it..
+        entry = self._db[_id]   # as document
+        return entry
 
-        obj = [ x for x in entry.items() if not x[0].startswith('_') ]
-        return render_template('books_dialog_ajax.html',
-                               id=_id, obj=obj)
+    def edit(self):
+        """ TODO: make decorator for the self.authorized bit """
+        if not self.authorized:
+            return redirect(self.url)
+        _id   = self['id']
+        entry = self.build_new_entry() if _id=='new' else get_entry(_id)
+        obj   = [ x for x in entry.items() if not x[0].startswith('_') ]
+        return render_template(self.edit_template, id=_id, obj=obj)
 
     def list(self):
-        return render_template('books.html',
-                               authenticated = self.authorized,
-                               tags=self._all_unique_tags(),
-                               booklist=[document2namedt(obj) for k,obj in self.rows])
+        """ TODO: use named tuples by default with self.rows? """
+        booklist = [ document2namedt(obj) for k, obj in self.rows ]
+        tags     = self._all_unique_tags()
+        return self.render_template(tags=tags, booklist=booklist)
 
     def main(self):
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         return self.edit() if self['id'] else self.list()
 
 class BookUpdate(BookList):
@@ -79,13 +76,13 @@ class BookUpdate(BookList):
     returns_json  = True
 
     def main(self):
-        doc = self._db[self['id']]
-        index = self['index']
+        doc    = self._db[self['id']]
+        index  = self['index']
         author = self['author']
-        title = self['title']
-        tags = eval(self['tags'])
+        title  = self['title']
+        tags   = eval(self['tags'])
         doc.update(tags=tags, title=title, index=int(index), author=author)
-        self._db[self['id']] = doc
+        self._db[self['id']] = doc # actually necessary after .update()?
         return dict(ok='true')
 
 

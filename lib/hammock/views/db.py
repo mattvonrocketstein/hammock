@@ -26,6 +26,13 @@ def use_local_template(func):
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
     database_name = None
+    db_schema     = None
+
+    def schema(self):
+        """ returns a new, empty entry for the books database """
+        assert self.db_schema is not None,'override db_schema first..'
+        from hammock._couch import resolve_schema
+        return resolve_schema(self.db_schema)
 
     @memoized_property
     def _db(self):
@@ -46,11 +53,25 @@ class DBView(View):
             for row in queryset:
                 yield row.id, row.value
 
+    def _all_unique_tags(self):
+        """ TODO: remove special case in Slash when coordinates
+                  database supports "tags" instead of just "tag"
+        """
+        q = '''function(doc){emit(null, doc.%s);}'''%'tags'
+        out = reduce(lambda x,y: x+y,[x.value for x in self._db.query(q)])
+        out = set(out)
+        return out
+
+    def get_entry(self, _id):
+        """ """
+        try:
+            return self._db[_id]
+        except ResourceNotFound,e:
+            report('resource with key "{id}" not found',id=_id)
+            raise
+
     @memoized_property
     def server(self): return Server()
-
-    @property
-    def databases(self): return [ x for x in self.server ]
 
     def _tag_filter_function(self, tag):
         out = render_template('js/tag_query.js', tag=tag)
@@ -102,3 +123,6 @@ class CouchView(DBView):
         """ dispatch to either the list function or the detail function"""
         db_name = self['db']
         return self.db_detail(db_name) if db_name else self.list_databases()
+
+    @property
+    def databases(self): return [ x for x in self.server ]
