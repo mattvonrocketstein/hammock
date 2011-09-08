@@ -11,8 +11,34 @@ from report import report as report
 
 conf = lazyModule('hammock.conf')
 
-def get_db(db_name=None):
-    db_name = db_name or conf.settings['hammock.coordinates_db_name']
+class Database(couchdb.client.Database):
+    """ """
+    def _all_unique_attr(self, attrname):
+        q = '''function(doc){emit(null, doc.%s);}'''%attrname
+        return set([x.value for x in self.query(q)])
+
+    def all(self):
+        """ return iterator for all rows """
+        query = '''function(doc){ emit(doc._id,doc);} '''
+        return (x for x in self.query(query))
+
+
+class Server(couchdb.Server):
+    """ """
+    def __init__(self):
+        super(Server,self).__init__(conf.settings['couch.server'])
+        self.resource.credentials = ( conf.settings['couch.username'],
+                                      conf.settings['couch.password'] )
+    def __getitem__(self, name):
+        from couchdb.client import validate_dbname, uri
+        db = Database(uri(self.resource.uri, name), validate_dbname(name),
+                      http=self.resource.http)
+        db.resource.head() # actually make a request to the database
+        return db
+
+
+def get_db(db_name):
+    db_name = db_name
     try:
         return setup()[db_name]
     except:
@@ -33,23 +59,13 @@ def update_db(db, _id, dct):
     report('after', doc)
     report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
 
-def setup():
-    """ couch-specific stuff for hammock
-
-        currently, this function is called several times and recreating
-        the server object repeatedly because i'm not sure whether it
-        handles reconnections, etc.
-    """
-    couch = couchdb.Server(conf.settings['couch.server'])
-    couch.resource.credentials = ( conf.settings['couch.username'],
-                                   conf.settings['couch.password'] )
-    return couch
+setup=Server
 
 def handle_dirty_entry(_id, db_name=None):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (faked)',[_id])
-    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-    db = get_db(db_name) #setup()[conf.settings['hammock.coordinates_db_name']]
+    #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+    db = get_db(db_name)
     #del db[_id]
 
 from collections import namedtuple
