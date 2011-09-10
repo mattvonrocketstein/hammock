@@ -57,7 +57,7 @@
   function edit_entry(name){
   $('#bookholder').load('/books',{id:name},function(){$('#edit_dialog').dialog('open');});
   }
-  $(document).ready(function() { $(".dialog").dialog({ autoOpen: false}); });
+  $(document).ready(function() { $(".dialog").dialog({ autoOpen: false, width : 400}); });
   $(document).ready(function() { $("#all_tags").hide(); });
 </script>
 {%endblock%}'
