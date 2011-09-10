@@ -56,7 +56,7 @@ class BookList(DBView):
         if not self.authorized:
             return redirect(self.url)
         _id   = self['id']
-        entry = self.build_new_entry() if _id=='new' else get_entry(_id)
+        entry = self.build_new_entry() if _id=='new' else self.get_entry(_id)
         obj   = [ x for x in entry.items() if not x[0].startswith('_') ]
         return render_template(self.edit_template, id=_id, obj=obj)
 
