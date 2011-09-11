@@ -58,8 +58,10 @@ class DBView(View):
                   database supports "tags" instead of just "tag"
         """
         q = '''function(doc){emit(null, doc.%s);}'''%'tags'
-        out = reduce(lambda x,y: x+y,[x.value for x in self._db.query(q)])
-        out = set(out)
+        out = [x.value for x in self._db.query(q)]
+        if out:
+            out = reduce(lambda x,y: x+y, out)
+            out = set(out)
         return out
 
     def get_entry(self, _id):

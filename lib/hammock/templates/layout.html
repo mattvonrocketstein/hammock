@@ -1,7 +1,7 @@
 <!doctype html>
 <title>{% block title %}Welcome{% endblock %} | hammock</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 <script src="/static/jquery.centreinwindow.js"></script>
@@ -10,12 +10,21 @@
 <div class=page>
   <h1>electromagnetic dojo</h1>
   <div class=navigation>
-    {%include "standard_header.html"%}
-    {% if g.user %}
-    {%include "superuser.html"%}
-    {% else %}
-    <a href="{{ url_for('login') }}">sign in</a>
-    {% endif %}
+    <table border=0 width=100%>
+      <tr>
+        <td align=left>
+          {%include "standard_header.html"%}
+          </td>
+        <td align=right>
+          {% if g.user %}
+          {%include "superuser.html"%}
+          {% else %}
+          <a href="{{ url_for('login') }}">sign in</a>
+          {% endif %}
+          </td>
+        </tr>
+      </table>
+
   </div>
   {% with flashes = get_flashed_messages() %}
   {% if flashes %}
