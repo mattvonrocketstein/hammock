@@ -23,11 +23,7 @@ class BookSchema(Schema):
     stamp  = lambda: str(datetime.datetime.utcnow())
     index  = 0
 
-class QuoteSchema(BookSchema):
-    source = ''
-    format = 'raw'
-
-class BookList(DBView):
+class BookAbstract(DBView):
     """ partial replacement  for reader.zgct """
 
     url           = '/books'
@@ -36,7 +32,7 @@ class BookList(DBView):
     template      = 'books.html'
     edit_template = 'books_dialog_ajax.html'
     db_schema     = BookSchema
-
+    redirect_success = '/books'
     def schema(self):
         """ returns a new, empty entry for the books database """
         schema = super(BookList,self).schema()
@@ -51,25 +47,8 @@ class BookList(DBView):
         entry = self._db[_id]   # as document
         return entry
 
-    def edit(self):
-        """ TODO: make decorator for the self.authorized bit """
-        if not self.authorized:
-            return redirect(self.url)
-        _id   = self['id']
-        entry = self.build_new_entry() if _id=='new' else self.get_entry(_id)
-        obj   = [ x for x in entry.items() if not x[0].startswith('_') ]
-        return render_template(self.edit_template, id=_id, obj=obj)
 
-    def list(self):
-        """ TODO: use named tuples by default with self.rows? """
-        booklist = [ document2namedt(obj) for k, obj in self.rows ]
-        tags     = self._all_unique_tags()
-        return self.render_template(tags=tags, booklist=booklist)
-
-    def main(self):
-        return self.edit() if self['id'] else self.list()
-
-class BookUpdate(BookList):
+class BookUpdate(BookAbstract):
     requires_auth = True
     methods       = ['GET']
     url           = '/books/update'
@@ -84,6 +63,31 @@ class BookUpdate(BookList):
         doc.update(tags=tags, title=title, index=int(index), author=author)
         self._db[self['id']] = doc # actually necessary after .update()?
         return dict(ok='true')
+
+
+class BookList(BookAbstract):
+    update_url    = BookUpdate.url
+    def edit(self):
+        """ TODO: make decorator for the self.authorized bit """
+        if not self.authorized:
+            return redirect(self.url)
+        _id   = self['id']
+        entry = self.build_new_entry() if _id=='new' else self.get_entry(_id)
+        obj   = [ x for x in entry.items() if not x[0].startswith('_') ]
+        return render_template(self.edit_template,
+                               update_url=self.update_url,
+                               id=_id, obj=obj)
+
+    def list(self):
+        """ TODO: use named tuples by default with self.rows? """
+        booklist = [ document2namedt(obj) for k, obj in self.rows ]
+        tags     = self._all_unique_tags()
+        return self.render_template(tags=tags,
+                                    this_url=self.url,
+                                    item_list=booklist)
+
+    def main(self):
+        return self.edit() if self['id'] else self.list()
 
 
 if __name__=='__main__':

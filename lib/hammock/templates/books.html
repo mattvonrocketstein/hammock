@@ -1,63 +1,31 @@
-{%extends "layout.html" %}
-{%block body%}
-<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-<table width=100%>
+{%extends "abstract.html"%}
+{%block sandwich%}
+<table>
   <tr>
-    <td align=left>
-      <a href="javascript:$('#all_tags').toggle();void(0);">filter by tags</a>
-      {% if authenticated %} |         <a href="javascript:edit_entry('new');void(0);">Create new</a> {% endif %}
-    </td>
-    <td align=right>
-      count: {{booklist|length}}
-    </td>
+    <th align=left>author</th>
+    <th align=left>title</th>
+    <th align=left>tags</th>
+    {%if authenticated%}<th>&nbsp;</th>{%endif%}
   </tr>
-  <tr id=all_tags>
-    <td colspan=2>
-      <hr>
-      {%for t in tags%}
-      <a href="/books?tag={{t}}">{{t}}</a> |
-      {%endfor%}
+  {%for book in item_list%}
+  <tr>
+    <td>{{book.author}}: </td>
+    <td><b>{{book.title}}</b> </td>
+    <td>
+      <small>
+        {% for t in book.tags%}
+        <a href="{{this_url}}?tag={{t}}">{{t}}</a>{%if not loop.last%}, {%endif%}
+        {%endfor%}
+      </small>
     </td>
+    {%if authenticated%}
+    <td>
+      <a href="javascript:edit_entry('{{book.id}}');void(0);">edit</a>
+      |
+      <a href="javascript:del_entry('{{book.id}}');void(0);">del</a>
+    </td>
+    {%endif%}
   </tr>
+  {%endfor%}
 </table>
-<hr>
-
-<center>
-  <table>
-    <tr>
-      <th align=left>author</th>
-      <th align=left>title</th>
-      <th align=left>tags</th>
-      {%if authenticated%}<th>&nbsp;</th>{%endif%}
-    </tr>
-    {%for book in booklist%}
-    <tr>
-      <td>{{book.author}}: </td>
-      <td><b>{{book.title}}</b> </td>
-      <td>
-        <small>
-          {% for t in book.tags%}
-          <a href="/books?tag={{t}}">{{t}}</a>{%if not loop.last%}, {%endif%}
-          {%endfor%}
-        </small>
-      </td>
-      {%if authenticated%}
-      <td>
-        <a href="javascript:edit_entry('{{book.id}}');void(0);">edit</a>
-      </td>
-      {%endif%}
-    </tr>
-    {%endfor%}
-  </table>
-</center>
-
-<div class=dialog id="edit_dialog" title="EditItem"> <div id=bookholder></div> </div>
-
-<script>
-  function edit_entry(name){
-  $('#bookholder').load('/books',{id:name},function(){$('#edit_dialog').dialog('open');});
-  }
-  $(document).ready(function() { $(".dialog").dialog({ autoOpen: false, width : 400}); });
-  $(document).ready(function() { $("#all_tags").hide(); });
-</script>
-{%endblock%}'
+{%endblock%}
