@@ -89,14 +89,15 @@ class Slash(DBView):
             center_lat, center_lon = calculate_center(points)
             minLat, minLng, maxLat, maxLng = box(points)
         return self.render_template(
-                               authenticated = self.authorized,
-                               points        = points,
-                               center_lat    = center_lat,
-                               center_lon    = center_lon,
-                               minLat        = minLat, minLng=minLng,
-                               maxLat        = maxLat, maxLng=maxLng,
-                               center_zoom   = self.center_zoom,
-                               utags         = self._all_unique_tags(),
-                               control_js    = self.control_js,
-                               goto          = self['goto'],
-                               API_KEY       = self.settings['google.maps_key'])
+            authenticated = self.authorized,
+            points        = points,
+            center_lat    = center_lat,
+            center_lon    = center_lon,
+            minLat        = minLat, minLng=minLng,
+            maxLat        = maxLat, maxLng=maxLng,
+            center_zoom   = self.center_zoom,
+            utags         = self._all_unique_tags(),
+            control_js    = self.control_js,
+            draw_trajectory = True if self['tag']=='recent' else False,
+            goto          = self['goto'],
+            API_KEY       = self.settings['google.maps_key'])
