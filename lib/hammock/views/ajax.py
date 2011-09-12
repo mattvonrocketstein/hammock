@@ -53,5 +53,5 @@ def set_factory(attr):
                   dict(url  = '/set_' + attr,
                        attr = attr)
                   )
-    report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
+    #report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
     return MySetter
