@@ -7,7 +7,7 @@
 from flask import jsonify
 from jinja2 import Template
 from flask import request, render_template, redirect
-from couchdb.client import ResourceNotFound
+from couchdb import ResourceNotFound
 
 from report import report
 
