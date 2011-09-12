@@ -1,5 +1,5 @@
 flask
-couchdb
+couchdb==0.6
 git+git://github.com/mattvonrocketstein/reporting.git#egg=reporting
 git+git://github.com/mattvonrocketstein/corkscrew.git#egg=corkscrew
 pygments # required by reporting
