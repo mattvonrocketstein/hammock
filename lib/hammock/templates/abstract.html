@@ -1,0 +1,30 @@
+{%extends "layout.html" %}
+{%block body%}
+
+{%include "tag_filter.html"%}
+<center>
+{%block sandwich%} {%endblock%}
+</center>
+<div class=dialog id="edit_dialog" title="EditItem"> <div id=itemholder></div> </div>
+
+<script>
+  {%include "js/everything.js" %}
+  function edit_entry(name){
+  $('#itemholder').load('{{this_url}}',{id:name},function(){$('#edit_dialog').dialog('open');});void(0);
+  }
+
+  function del_entry(name){
+    $.ajax({
+            type: "post",
+                data:{remove:name},
+                url: "{{this_url}}",
+                success: function sfunc(data, text) {alert('result: '+data+'::'+text);},
+                error: efunc
+                });
+  }
+  {%block dialog_init%}
+  $(document).ready(function() { $(".dialog").dialog({ autoOpen: false, width : 400}); });
+  {%endblock%}
+  $(document).ready(function() { $("#all_tags").hide(); });
+</script>
+{%endblock%}'

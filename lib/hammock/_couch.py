@@ -29,6 +29,8 @@ class Server(couchdb.Server):
         super(Server,self).__init__(conf.settings['couch.server'])
         self.resource.credentials = ( conf.settings['couch.username'],
                                       conf.settings['couch.password'] )
+        self.resource.http.add_credentials(*self.resource.credentials)
+
     def __getitem__(self, name):
         from couchdb.client import validate_dbname, uri
         db = Database(uri(self.resource.uri, name), validate_dbname(name),
@@ -71,9 +73,49 @@ def handle_dirty_entry(_id, db_name=None):
 from collections import namedtuple
 def document2namedt(doc):
     """ """
-    doc=dict(doc.items())
+    doc = dict(doc.items())
     doc.pop('_rev')
-    _id=doc.pop('_id')
-    doc['id']=_id
+    _id = doc.pop('_id')
+    doc['id'] = _id
     dnt = namedtuple('DynamicNamedTuple',' '.join(doc.keys()))
     return dnt(**doc)
+
+from hammock.utils import AllStaticMethods
+class Schema(object):
+    """ _unpack:
+
+         metadata that defines helper functions that take
+         request-variables to values suitable for storage
+         in the database.  for example, integers will come
+         of requests as simple strings by default, to fix
+         that use something like this the following
+
+           >>> myschema._unpack['my_int_var'] = int
+    """
+    __metaclass__ = AllStaticMethods
+    _unpack  = {}
+    _render  = {}
+    _no_edit = []
+
+def unpack_as_schema(req, schema):
+    s = resolve_schema(schema).keys()
+    q = dict(req.values.items())
+    p = {}
+    for x in q.keys():
+        if x in s:
+            p[x]=q[x]
+
+    for special in schema._unpack:
+        if special in p:
+            p[special] = schema._unpack[special](p[special])
+
+    return p
+
+def resolve_schema(schema):
+    schema=schema()
+    out = [[x,getattr(schema,x)] for x in filter(lambda x: not x.startswith('_'), dir(schema))]
+    out = dict(out)
+    for x in out:
+        if callable(out[x]):
+            out[x]=out[x]()
+    return out
