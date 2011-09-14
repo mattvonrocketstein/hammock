@@ -1,15 +1,17 @@
 {%extends "abstract.html"%}
 {%block sandwich%}
 {%for book in item_list%}
-{%if authenticated%}
+
 <table width=100%>
   <tr>
     <td align=left style="font-family:garamond;">
+      {%if authenticated%}
       <b>
         <a href="javascript:edit_entry('{{book.id}}');void(0);">edit</a>
         |
         <a href="javascript:del_entry('{{book.id}}');void(0);">del</a>
       </b>
+      {%endif%}
     </td>
     <td align=right>
       <small>
@@ -20,7 +22,7 @@
     </td>
   </tr>
 </table>
-{%endif%}
+
 {%if not book.content%}
 (No content to display)
 {%else%}
