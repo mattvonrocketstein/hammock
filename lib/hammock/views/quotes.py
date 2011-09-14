@@ -1,3 +1,6 @@
+""" hammock.views.quotes
+"""
+
 from .books import BookSchema, BookList, BookUpdate
 
 class QuoteSchema(BookSchema):
