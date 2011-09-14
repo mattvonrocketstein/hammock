@@ -5,9 +5,9 @@
     http://stackoverflow.com/questions/5982638/using-cherrypy-cherryd-to-launch-multiple-flask-instances
 """
 from flask import jsonify
-from jinja2 import Template
 from flask import request, render_template, redirect
 from couchdb import ResourceNotFound
+from jinja2 import Template
 
 from report import report
 
