@@ -1,15 +1,15 @@
 """ hammock.views.quotes
 """
 
-from .books import BookSchema, BookList, BookUpdate
+from .books import BookList, BookUpdate
+from .books.schema import BookSchema
 
 class QuoteSchema(BookSchema):
     source   = ''
     format   = 'raw'
     content  = ''
     _render  = dict(content='<textarea style="font-size:7pt;font-family:comic sans ms" style="color:#003399" id=input_{{x}} rows=20 cols=90>{{y}}</textarea>')
-    #_no_edit = 'index stamp'.split()
-    _no_edit = 'stamp'.split()
+    _no_edit = 'index stamp'.split()
 
 class QuoteAbstract(object):
     url           = '/quotes'
