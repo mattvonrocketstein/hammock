@@ -5,8 +5,7 @@
     http://stackoverflow.com/questions/5982638/using-cherrypy-cherryd-to-launch-multiple-flask-instances
 """
 from flask import jsonify
-from flask import request, render_template, redirect
-from couchdb import ResourceNotFound
+from flask import request, render_template
 from jinja2 import Template
 
 from report import report
@@ -14,36 +13,8 @@ from report import report
 from hammock._couch import document2namedt
 from hammock._couch import unpack_as_schema
 from hammock.utils import authorization_required
-from hammock.views.db import DBView, use_local_template
 
-from .schema import BookSchema
-
-
-class BookAbstract(DBView):
-    """ partial replacement  for reader.zgct """
-
-    url           = '/books'
-    database_name = 'books'
-    methods       = ['GET', 'POST']
-    template      = 'books.html'
-    edit_template = 'books_dialog_ajax.html'
-    db_schema     = BookSchema
-    redirect_success = '/books'
-
-    def schema(self):
-        """ returns a new, empty entry for the books database """
-        schema = super(BookAbstract, self).schema()
-        #schema = DBView.schema(self)
-        schema.update(index=len(list(self.rows)))
-        return schema
-
-    def build_new_entry(self):
-        """ almost ready to be promoted to DBView """
-        entry = self.schema()   # as dictionary
-        _id = entry['stamp']    # get new items key.
-        self._db[_id] = entry   # save it..
-        entry = self._db[_id]   # as document
-        return entry
+from .abstract import BookAbstract
 
 class BookUpdate(BookAbstract):
     requires_auth = True
