@@ -9,10 +9,12 @@ def before_request():
         each request and look up the current user
         so that we know he's there.
     """
-    report(request.url)
-    report(request.values)
     g.user = None
+    report(request.url)
+    if request.values:
+        report(request.values)
     if 'user_id' in session:
         g.user = session['user_id']
 
-def after_request(response): return response
+def after_request(response):
+    return response

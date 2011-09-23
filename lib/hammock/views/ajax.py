@@ -48,10 +48,8 @@ class Setter(SmartView, DBView):
 
 def set_factory(attr):
     """ """
-    MySetter=type('set_' + attr,
-                  (Setter,),
-                  dict(url  = '/set_' + attr,
-                       attr = attr)
-                  )
-    #report("built setter {S} @ {U}", S=MySetter, U=MySetter.url)
-    return MySetter
+    name  = 'set_' + attr
+    bases = (Setter,)
+    dct   = dict(url  = '/set_' + attr,
+                 attr = attr)
+    return type(name, bases, dct)

@@ -13,8 +13,12 @@ from report import report
 from hammock._couch import document2namedt
 from hammock._couch import unpack_as_schema
 from hammock.utils import authorization_required
+from hammock.views.mixins import Removable
 
 from .abstract import BookAbstract
+
+def nonprivate_editable(key, db_schema):
+    return not key.startswith('_') and key not in db_schema._no_edit
 
 class BookUpdate(BookAbstract):
     requires_auth = True
@@ -29,40 +33,34 @@ class BookUpdate(BookAbstract):
         self._db[self['id']] = doc
         return dict(ok='true')
 
-
-class BookList(BookAbstract):
-    update_url    = BookUpdate.url
-
-    @authorization_required
-    def remove(self):
-        _id   = self['remove']
-        report("Removing {id} from {db}", id=_id, db=self.database_name)
-        del self._db[_id]
-        return jsonify(dict(ok='true'))
-
+class Editable(object):
     @authorization_required
     def edit(self):
-        """ TODO: make decorator for the self.authorized bit """
-        defaultTemplate = '<input id=input_{{x}} style="width:250px;" value="{{y}}" type=text>'
+        widget_template = '<input id=input_{{key}} style="width:250px;" value="{{value}}" type=text>'
 
+        # get or create a new entry id
         _id   = self['id']
         entry = self.build_new_entry() if _id=='new' else self.get_entry(_id)
         _id   = entry.id
-        test  = lambda x: not x.startswith('_') and x not in self.db_schema._no_edit
 
-        obj = []
-        for key,val in entry.items():
-            if not test(key): continue
-            else:
-                template = self.db_schema._render.get(key, defaultTemplate)
-                val = Template(template).render(x=key, y=val)
-                obj.append([key, val])
+        editable_parts = []
+
+        items = [ [key, val] for key,val in entry.items() \
+                  if nonprivate_editable(key,self.db_schema) ]
+        for key, val in items:
+            template = self.db_schema._render.get(key, widget_template)
+            widget = Template(template).render(key=key, value=val)
+            editable_parts.append([key, widget])
 
         return render_template(self.edit_template,
                                update_url=self.update_url,
                                redirect_success=self.redirect_success,
                                id=_id,
-                               obj=obj)
+                               obj=editable_parts)
+
+class BookList(BookAbstract, Removable, Editable):
+    update_url    = BookUpdate.url
+
     def _list(self):
         return [ document2namedt(obj) for k, obj in self.rows ]
 
@@ -81,7 +79,6 @@ class BookList(BookAbstract):
             return self.remove()
         else:
             return self.list()
-
 
 if __name__=='__main__':
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
