@@ -1,3 +1,6 @@
+""" hammock.views.books.schema
+"""
+
 import datetime
 from hammock._couch import Schema
 
