@@ -39,8 +39,8 @@ SetTag   = set_factory('tag')
 
 from corkscrew.views import Favicon
 from .db import CouchView
-from .books import BookList, BookUpdate
-from .quotes import QuoteList, QuoteUpdate
+from robotninja.books import BookList, BookUpdate
+from robotninja.quotes import QuoteList, QuoteUpdate
 
 __views__= [
     # corkscrew standard views

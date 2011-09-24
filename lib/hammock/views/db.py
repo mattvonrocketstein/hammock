@@ -12,6 +12,7 @@ from report import report as report
 
 from hammock._couch import get_db, Server
 from hammock.utils import memoized_property
+from hammock._couch import document2namedt
 
 from flask import render_template_string, render_template
 
