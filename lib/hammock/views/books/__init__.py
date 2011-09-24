@@ -29,9 +29,6 @@ class BookUpdate(BookAbstract):
 class BookList(BookAbstract, Removable, Editable):
     update_url    = BookUpdate.url
 
-    def _list(self):
-        return [ document2namedt(obj) for k, obj in self.rows ]
-
     def list(self):
         """ TODO: use named tuples by default with self.rows? """
         booklist = self._list()
