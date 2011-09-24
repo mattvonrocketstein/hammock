@@ -28,6 +28,10 @@ class DBView(View):
     database_name = None
     db_schema     = None
 
+    def _list(self):
+        """ similar to self.rows, except it returns named tuples """
+        return [ document2namedt(obj) for k, obj in self.rows ]
+
     def schema(self):
         """ returns a new, empty entry for the books database """
         assert self.db_schema is not None,'override db_schema first..'
