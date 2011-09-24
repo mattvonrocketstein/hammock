@@ -4,7 +4,7 @@
 from corkscrew import SmartView
 
 from hammock._couch import update_db
-from .db import DBView
+from hammock.views.db import DBView
 
 class Remove(SmartView, DBView):
     """

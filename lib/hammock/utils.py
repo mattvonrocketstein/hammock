@@ -1,3 +1,13 @@
+from flask import render_template_string
+def use_local_template(func):
+    def fxn(*args, **kargs):
+        context = func(*args, **kargs)
+        template = '{%extends "layout.html" %}{%block body%}<center>' + \
+                   func.__doc__ + '</center>{%endblock%}'
+        return render_template_string(template, **context)
+    return fxn
+
+
 from types import FunctionType
 from report import report, getReporter
 report2 = getReporter(label=False)

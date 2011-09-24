@@ -6,23 +6,17 @@
           but from futon with the same user, it works fine.  wtf?
 """
 
+from flask import render_template_string, render_template
+
+
 from corkscrew import View
 
 from report import report as report
 
 from hammock._couch import get_db, Server
-from hammock.utils import memoized_property
 from hammock._couch import document2namedt
+from hammock.utils import memoized_property, use_local_template
 
-from flask import render_template_string, render_template
-
-def use_local_template(func):
-    def fxn(*args, **kargs):
-        context = func(*args, **kargs)
-        template = '{%extends "layout.html" %}{%block body%}<center>' + \
-                   func.__doc__ + '</center>{%endblock%}'
-        return render_template_string(template, **context)
-    return fxn
 
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """

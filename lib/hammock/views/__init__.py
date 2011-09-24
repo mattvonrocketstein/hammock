@@ -8,11 +8,13 @@ from flask import request
 
 from corkscrew import View
 from corkscrew.auth import Login, Logout
+from corkscrew.views import Favicon
+
 from report import report as report
 
-from robotninja.coords.map_home import Slash
+from hammock.crud.remove import Remove
 
-from .remove import Remove
+from .db import CouchView
 from .ajax import set_factory
 from .set_location import SetLocation
 
@@ -37,10 +39,9 @@ Login._template = """
 SetLabel = set_factory('label')
 SetTag   = set_factory('tag')
 
-from corkscrew.views import Favicon
-from .db import CouchView
 from robotninja.books import BookList, BookUpdate
 from robotninja.quotes import QuoteList, QuoteUpdate
+from robotninja.coords.map_home import Slash
 
 __views__= [
     # corkscrew standard views
