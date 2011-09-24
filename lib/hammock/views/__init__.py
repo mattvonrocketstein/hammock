@@ -10,7 +10,7 @@ from corkscrew import View
 from corkscrew.auth import Login, Logout
 from report import report as report
 
-from hammock.map_home import Slash
+from robotninja.coords.map_home import Slash
 
 from .remove import Remove
 from .ajax import set_factory
