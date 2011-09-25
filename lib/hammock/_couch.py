@@ -119,3 +119,35 @@ def resolve_schema(schema):
         if callable(out[x]):
             out[x]=out[x]()
     return out
+
+
+
+class PersistentObject(object):
+    """
+    >>> APC = PersistentObject(db_name='pickles', property_name='airport_codes')
+
+    """
+    def __init__(self,db_name, property_name):
+        self.db_name = db_name
+        self.property_name = property_name
+
+    @property
+    def database(self):
+        return Server()[self.db_name]
+
+    @property
+    def doc(self):
+        pickles = self.database
+        apcs    = pickles[self.property_name]
+        return apcs
+
+    def get(self):
+        """ """
+        return self.doc['value']
+
+    def set(self,lst):
+        doc = self.doc
+        doc.update(value=lst)
+        self.database[doc.id]=doc
+
+    handle = property(get, set)

@@ -12,13 +12,7 @@ from corkscrew.views import Favicon
 
 from report import report as report
 
-from hammock.crud.remove import Remove
-
-from hammock.views.db import CouchView
-from hammock.views.ajax import set_factory
-
-# TODO: move
-from hammock.views.set_location import SetLocation
+from .db import CouchView
 
 Login._template = """
 {% extends "layout.html" %}
@@ -38,25 +32,9 @@ Login._template = """
 {% endblock %}
 """
 
-SetLabel = set_factory('label')
-SetTag   = set_factory('tag')
-
-from robotninja.books import BookList, BookUpdate
-from robotninja.quotes import QuoteList, QuoteUpdate
-from robotninja.coords.map_home import Slash
-
 __views__= [
     # corkscrew standard views
     Favicon, Login, Logout,
-
-    # hammock core
-    Slash,
-    Remove, SetLocation,
-    SetLabel, SetTag,
-
-    # trac replacements
-    BookList, BookUpdate,
-    QuoteList, QuoteUpdate,
 
     # couch views
     CouchView,
