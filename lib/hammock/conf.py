@@ -9,12 +9,12 @@ from corkscrew import Settings as _Settings
 couch = lazyModule('hammock._couch')
 
 class Settings(_Settings):
-    default_file  = 'hammock.ini'
-    extra_options = ( ('--backup',),
-                      dict(dest='backup_database',
-                           default='',
-                           handler='doomwagon',
-                           ))
+    default_file   = 'hammock.ini'
+    backup_options = dict(dest='backup_database',
+                          default='',
+                          handler='doomwagon',
+                          )
+    extra_options  = ( ('--backup',), backup_options )
 
     def __init__(self,*args, **kargs):
         # ugh hack
