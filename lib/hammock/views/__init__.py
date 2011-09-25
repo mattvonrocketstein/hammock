@@ -14,9 +14,11 @@ from report import report as report
 
 from hammock.crud.remove import Remove
 
-from .db import CouchView
-from .ajax import set_factory
-from .set_location import SetLocation
+from hammock.views.db import CouchView
+from hammock.views.ajax import set_factory
+
+# TODO: move
+from hammock.views.set_location import SetLocation
 
 Login._template = """
 {% extends "layout.html" %}
