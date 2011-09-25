@@ -1,16 +1,19 @@
+""" hammock.crud
 """
-"""
-from .remove import Removable
-
 from flask import jsonify
 from jinja2 import Template
 from flask import render_template
 
 from report import report
 
-from hammock.crud import Removable
 from hammock.utils import authorization_required
 
+from .remove import Removable
+
+# TODO: not yet generic.. moved to robotninja.coords
+#from .remove import Remove
+#TODO: move to utilities
+#from hammock.util import nomprivate_editable
 def nonprivate_editable(key, db_schema):
     return not key.startswith('_') and key not in db_schema._no_edit
 
