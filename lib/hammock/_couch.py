@@ -6,6 +6,7 @@
 """
 
 import couchdb
+from couchdb.client import ResourceNotFound
 from peak.util.imports import lazyModule
 from report import report as report
 
@@ -138,7 +139,12 @@ class PersistentObject(object):
     @property
     def doc(self):
         pickles = self.database
-        apcs    = pickles[self.property_name]
+        try:
+            apcs    = pickles[self.property_name]
+        except ResourceNotFound,e:
+            apcs = dict(value=None)
+            pickles[self.property_name] = apcs
+            apcs    = pickles[self.property_name]
         return apcs
 
     def get(self):
