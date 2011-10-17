@@ -1,11 +1,15 @@
 """ hammock.views.remove
 """
 
+from flask import jsonify
+
 from corkscrew import SmartView
 
 from hammock._couch import update_db
 from hammock.views.db import DBView
 from hammock.utils import authorization_required
+
+from report import report
 
 class Removable(object):
     """ mixin for item deletion """

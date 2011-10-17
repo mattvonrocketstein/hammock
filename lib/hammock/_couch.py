@@ -8,7 +8,10 @@
 import couchdb
 from couchdb.client import ResourceNotFound
 from peak.util.imports import lazyModule
+
 from report import report as report
+
+from hammock.utils import AllStaticMethods
 
 conf = lazyModule('hammock.conf')
 
@@ -81,7 +84,7 @@ def document2namedt(doc):
     dnt = namedtuple('DynamicNamedTuple',' '.join(doc.keys()))
     return dnt(**doc)
 
-from hammock.utils import AllStaticMethods
+
 class Schema(object):
     """ _unpack:
 
@@ -99,6 +102,7 @@ class Schema(object):
     _no_edit = []
 
 def unpack_as_schema(req, schema):
+    """ unpack a request into a dictionary according to this schema """
     s = resolve_schema(schema).keys()
     q = dict(req.values.items())
     p = {}
@@ -113,9 +117,11 @@ def unpack_as_schema(req, schema):
     return p
 
 def resolve_schema(schema):
-    schema=schema()
-    out = [[x,getattr(schema,x)] for x in filter(lambda x: not x.startswith('_'), dir(schema))]
-    out = dict(out)
+    """ resolves a schema to the implied default value """
+    schema = schema()
+    out    = [ [x,getattr(schema,x)] for x in \
+              filter(lambda x: not x.startswith('_'), dir(schema))]
+    out    = dict(out)
     for x in out:
         if callable(out[x]):
             out[x]=out[x]()
