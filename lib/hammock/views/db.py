@@ -8,6 +8,7 @@
 
 from flask import render_template_string, render_template
 
+#from couchdb.client import ResourceNotFound
 
 from corkscrew import View
 
@@ -18,6 +19,7 @@ from hammock._couch import document2namedt
 from hammock.utils import memoized_property, use_local_template
 
 
+
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
     database_name = None
@@ -26,6 +28,19 @@ class DBView(View):
     def _list(self):
         """ similar to self.rows, except it returns named tuples """
         return [ document2namedt(obj) for k, obj in self.rows ]
+
+    def get_url(self, hash):
+        "eg http://dojo.robotninja.org:5984/psa/cbe4af06308e90adc707559b85e27a52/wtf%20is%20velapene%20screen.mp3"
+
+    def build_new_entry(self):
+        """ not really quite generic enough.
+            still it depends on 'stamp' as pk
+        """
+        entry = self.schema()   # as dictionary
+        _id = entry['stamp']    # get new items key.
+        self._db[_id] = entry   # save it..
+        entry = self._db[_id]   # as document
+        return entry
 
     def schema(self):
         """ returns a new, empty entry for the books database """
@@ -65,11 +80,11 @@ class DBView(View):
 
     def get_entry(self, _id):
         """ """
-        try:
-            return self._db[_id]
-        except ResourceNotFound,e:
-            report('resource with key "{id}" not found',id=_id)
-            raise
+        #try:
+        return self._db[_id]
+        #except ResourceNotFound,e:
+        #    report('resource with key "{id}" not found',id=_id)
+        #    raise
 
     @memoized_property
     def server(self): return Server()

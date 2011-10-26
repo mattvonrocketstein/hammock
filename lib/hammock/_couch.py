@@ -6,7 +6,7 @@
 """
 
 import couchdb
-from couchdb.client import ResourceNotFound
+#from couchdb.client import ResourceNotFound
 from peak.util.imports import lazyModule
 
 from report import report as report
@@ -15,7 +15,7 @@ from hammock.utils import AllStaticMethods
 
 conf = lazyModule('hammock.conf')
 
-class Database(couchdb.client.Database):
+class DatabaseMixin(object): #couchdb.client.Database):
     """ """
     def _all_unique_attr(self, attrname):
         q = '''function(doc){emit(null, doc.%s);}'''%attrname
@@ -33,14 +33,16 @@ class Server(couchdb.Server):
         super(Server,self).__init__(conf.settings['couch.server'])
         self.resource.credentials = ( conf.settings['couch.username'],
                                       conf.settings['couch.password'] )
-        self.resource.http.add_credentials(*self.resource.credentials)
+        #self.resource.http.add_credentials(*self.resource.credentials)
 
     def __getitem__(self, name):
-        from couchdb.client import validate_dbname, uri
-        db = Database(uri(self.resource.uri, name), validate_dbname(name),
-                      http=self.resource.http)
-        db.resource.head() # actually make a request to the database
-        return db
+        #from couchdb.client import validate_dbname, uri
+        #db = Database(uri(self.resource.uri, name), validate_dbname(name),
+        #              http=self.resource.http)
+        #db.resource.head() # actually make a request to the database
+        result = super(Server,self).__getitem__(name)
+        result.__class__ = type('DynamicDatabase',(DatabaseMixin,result.__class__),{})
+        return result
 
 
 def get_db(db_name):
@@ -101,14 +103,16 @@ class Schema(object):
     _render  = {}
     _no_edit = []
 
-def unpack_as_schema(req, schema):
-    """ unpack a request into a dictionary according to this schema """
+def unpack_as_schema(q, schema):
+    """ unpack a request/dict into a dictionary according to this schema
+    """
     s = resolve_schema(schema).keys()
-    q = dict(req.values.items())
+    # because it might be a request
+    q = q if isinstance(q,dict) else dict(q.values.items())
     p = {}
     for x in q.keys():
         if x in s:
-            p[x]=q[x]
+            p[x] = q[x]
 
     for special in schema._unpack:
         if special in p:
@@ -119,7 +123,7 @@ def unpack_as_schema(req, schema):
 def resolve_schema(schema):
     """ resolves a schema to the implied default value """
     schema = schema()
-    out    = [ [x,getattr(schema,x)] for x in \
+    out    = [ [x, getattr(schema,x)] for x in \
               filter(lambda x: not x.startswith('_'), dir(schema))]
     out    = dict(out)
     for x in out:
@@ -145,12 +149,12 @@ class PersistentObject(object):
     @property
     def doc(self):
         pickles = self.database
-        try:
-            apcs    = pickles[self.property_name]
-        except ResourceNotFound,e:
-            apcs = dict(value=None)
-            pickles[self.property_name] = apcs
-            apcs    = pickles[self.property_name]
+        #try:
+        apcs    = pickles[self.property_name]
+        #except ResourceNotFound,e:
+        #    apcs = dict(value=None)
+        #    pickles[self.property_name] = apcs
+        #    apcs    = pickles[self.property_name]
         return apcs
 
     def get(self):
