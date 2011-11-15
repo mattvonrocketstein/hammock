@@ -6,12 +6,9 @@
 """
 
 import couchdb
-#from couchdb.client import ResourceNotFound
 from peak.util.imports import lazyModule
-
-from report import report as report
-
 from hammock.utils import AllStaticMethods
+from report import report as report
 
 conf = lazyModule('hammock.conf')
 
@@ -36,10 +33,7 @@ class Server(couchdb.Server):
         #self.resource.http.add_credentials(*self.resource.credentials)
 
     def __getitem__(self, name):
-        #from couchdb.client import validate_dbname, uri
-        #db = Database(uri(self.resource.uri, name), validate_dbname(name),
-        #              http=self.resource.http)
-        #db.resource.head() # actually make a request to the database
+        """ just brutal """
         result = super(Server,self).__getitem__(name)
         result.__class__ = type('DynamicDatabase',(DatabaseMixin,result.__class__),{})
         return result

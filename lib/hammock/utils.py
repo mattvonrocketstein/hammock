@@ -1,4 +1,8 @@
-from flask import render_template_string
+""" hammock.utils
+"""
+
+from flask import render_template_string, redirect
+
 def use_local_template(func):
     def fxn(*args, **kargs):
         context = func(*args, **kargs)

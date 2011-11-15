@@ -18,8 +18,6 @@ from hammock._couch import get_db, Server
 from hammock._couch import document2namedt
 from hammock.utils import memoized_property, use_local_template
 
-
-
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
     database_name = None
@@ -142,3 +140,11 @@ class CouchView(DBView):
 
     @property
     def databases(self): return [ x for x in self.server ]
+
+class ViewView(View):
+    """ view for showing information abouts views
+    """
+    url = '/__'
+    requires_auth = True
+    def main(self):
+        return "NIY"
