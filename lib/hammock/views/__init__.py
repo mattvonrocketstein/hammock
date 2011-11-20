@@ -26,6 +26,7 @@ Login._template = """
       <dd><input type=text name=username size=30 value="{{ request.form.username }}">
       <dt>Password:
       <dd><input type=password name=password size=30>
+      <input type=hidden name=next value="{{request.values.next}}">
     </dl>
     <div class=actions><input type=submit value="Sign In"></div>
   </form>
