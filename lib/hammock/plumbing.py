@@ -10,9 +10,10 @@ def before_request():
         so that we know he's there.
     """
     g.user = None
-    report(request.url)
+    print request.url
     if request.values:
-        report(request.values)
+        #report(str(request.values))
+        print request.values
     if 'user_id' in session:
         g.user = session['user_id']
 
