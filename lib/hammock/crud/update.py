@@ -53,6 +53,5 @@ class Editable(object):
 
         return render_template(self.edit_template,
                                update_url=self.update_url,
-                               redirect_success=self.redirect_success,
                                id=_id,
                                obj=editable_parts)
