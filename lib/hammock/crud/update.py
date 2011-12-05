@@ -43,14 +43,22 @@ class Editable(object):
         _id   = entry.id
 
         editable_parts = []
-
+        get_widget = lambda key,val: Template(template).render(key=key, value=val)
         items = [ [key, val] for key,val in entry.items() \
                   if nonprivate_editable(key,self.db_schema) ]
         for key, val in items:
             template = self.db_schema._render.get(key, widget_template)
-            widget = Template(template).render(key=key, value=val)
+            widget = get_widget(key,val)
             editable_parts.append([key, widget])
 
+        # find keys unexpected missing from request that are still in schema.
+        # this allows updated schema's to still present correct information
+        # in ajax update dialogs
+        example_entry = self.db_schema._resolve()
+        tmp = set(example_entry.keys()) - \
+              set(dict(items).keys()).union(set(self.db_schema._no_edit))
+        for key in tmp:
+            editable_parts.append([key, get_widget(key, example_entry[key])])
         return render_template(self.edit_template,
                                update_url=self.update_url,
                                id=_id,

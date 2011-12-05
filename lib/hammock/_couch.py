@@ -97,6 +97,10 @@ class Schema(object):
     _render  = {}
     _no_edit = []
 
+    @classmethod
+    def _resolve(kls):
+        return resolve_schema(kls)
+
 def unpack_as_schema(q, schema):
     """ unpack a request/dict into a dictionary according to this schema
     """
