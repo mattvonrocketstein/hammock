@@ -3,8 +3,12 @@
 
 # TODO: not yet generic.. moved to robotninja.coords
 #from .remove import Remove
+
 #TODO: move to utilities
 #from hammock.util import nomprivate_editable
+
+from collections import defaultdict
+
 from jinja2 import Template
 from flask import render_template
 
@@ -16,6 +20,10 @@ def nonprivate_editable(key, db_schema):
     """ """
     return not key.startswith('_') and key not in db_schema._no_edit
 
+TYPE_MAP = defaultdict(lambda: 'widgets/string_type.html')
+TYPE_MAP.update({ type('') : 'widgets/string_type.html',
+                  type(u'') : 'widgets/string_type.html',
+                  type(tuple()) : 'widgets/tuple_type.html' })
 
 class Editable(object):
     """
@@ -33,22 +41,28 @@ class Editable(object):
         templates may choose not to use this.
     """
 
+    def resolve_template_from_string(self, name):
+        """ returns a triple of
+            ( <string-src>,
+              <abs-path-to-template>,
+              <function uptodate(?)> )
+        """
+        assert name
+        return self.app.jinja_loader.get_source(self.app.jinja_env, name)
+
     @authorization_required
     def edit(self):
-        widget_template = '<input id=input_{{key}} style="width:250px;" value="{{value}}" type=text>'
-
+        """ """
         # get or create a new entry id
         _id   = self['id']
         entry = self.build_new_entry() if _id=='new' else self.get_entry(_id)
         _id   = entry.id
 
         editable_parts = []
-        get_widget = lambda key,val: Template(template).render(key=key, value=val)
         items = [ [key, val] for key,val in entry.items() \
-                  if nonprivate_editable(key,self.db_schema) ]
+                  if nonprivate_editable(key, self.db_schema) ]
         for key, val in items:
-            template = self.db_schema._render.get(key, widget_template)
-            widget = get_widget(key,val)
+            widget = self._get_widget(key, value=val, schema=self.db_schema)
             editable_parts.append([key, widget])
 
         # find keys unexpected missing from request that are still in schema.
@@ -58,8 +72,25 @@ class Editable(object):
         tmp = set(example_entry.keys()) - \
               set(dict(items).keys()).union(set(self.db_schema._no_edit))
         for key in tmp:
-            editable_parts.append([key, get_widget(key, example_entry[key])])
+            editable_parts.append([key, self._get_widget(key,
+                                                   value = example_entry[key],
+                                                   schema=self.db_schema)])
         return render_template(self.edit_template,
                                update_url=self.update_url,
                                id=_id,
                                obj=editable_parts)
+    def _get_widget(self, key, value=None, schema=None):
+        template = self._get_template(key, value=value, schema=schema,)
+        return template.render(key=key, default=getattr(schema,key),
+                               value=value)
+
+    def _get_template(self, key, schema=None, value='no-value', loader=None):
+        """ get a (blank) template for this editing this key from the
+            database schema, failing that return the default
+        """
+        from_schema_definition = schema._render.get(key, None)
+        from_best_guess = TYPE_MAP[type(getattr(schema,key))]
+        if from_schema_definition:
+            return Template(from_schema_definition)
+        else:
+            return Template(self.resolve_template_from_string(from_best_guess)[0])
