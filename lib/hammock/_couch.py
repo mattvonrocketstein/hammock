@@ -66,7 +66,6 @@ setup=Server
 def handle_dirty_entry(_id, db_name=None):
     """ page at / may call this handler on malformed database entries. """
     report('dirty entry in coordinates database.. removing it (faked)',[_id])
-    #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
     db = get_db(db_name)
     #del db[_id]
 
@@ -103,6 +102,8 @@ class Schema(object):
 
 def unpack_as_schema(q, schema):
     """ unpack a request/dict into a dictionary according to this schema
+
+        TODO: verification for multiple choice?
     """
     s = resolve_schema(schema).keys()
     # because it might be a request
@@ -125,8 +126,15 @@ def resolve_schema(schema):
               filter(lambda x: not x.startswith('_'), dir(schema))]
     out    = dict(out)
     for x in out:
+
+        # callable indicates jit value.. substitute it
         if callable(out[x]):
-            out[x]=out[x]()
+            out[x] = out[x]()
+
+        # tuple indicates multiple choice.. default is the first one
+        elif type(out)==type(tuple()):
+            out[x] = out[x][0]
+
     return out
 
 
