@@ -28,7 +28,7 @@ class DBView(View):
         return [ document2namedt(obj) for k, obj in self.rows ]
 
     def get_url(self, hash):
-        "eg http://dojo.robotninja.org:5984/psa/cbe4af06308e90adc707559b85e27a52/wtf%20is%20velapene%20screen.mp3"
+        "e.g. /psa/cbe4af06308e90adc707559b85e27a52/wtf%20is%20velapene%20screen.mp3"
 
     def build_new_entry(self):
         """ not really quite generic enough.
@@ -65,12 +65,17 @@ class DBView(View):
             for row in queryset:
                 yield row.id, row.value
 
+    def rows_at(self, attr_name):
+        """ """
+        q = '''function(doc){emit(null, doc.%s);}''' % attr_name
+        out = [ x.value for x in self._db.query(q) ]
+        return out
+
     def _all_unique_tags(self):
         """ TODO: remove special case in Slash when coordinates
                   database supports "tags" instead of just "tag"
         """
-        q = '''function(doc){emit(null, doc.%s);}'''%'tags'
-        out = [x.value for x in self._db.query(q)]
+        out = self.rows_at('tags')
         if out:
             out = reduce(lambda x,y: x+y, out)
             out = set(out)
@@ -88,12 +93,10 @@ class DBView(View):
     def server(self): return Server()
 
     def _tag_filter_function(self, tag):
+        """ TODO: dryer"""
         out = render_template('js/tag_query.js', tag=tag)
-        print '-'*70
-        print out
-        print '-'*70
+        print '-'*70, out, '-'*70
         return out
-
         #'''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
 
     def filter_where_tag_is(self, tag):
