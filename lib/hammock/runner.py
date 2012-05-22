@@ -1,4 +1,6 @@
 """ hammock.runner
+
+    TODO: not generic
 """
 import platform
 
