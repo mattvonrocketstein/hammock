@@ -17,7 +17,6 @@ class Setter(SmartView, DBView):
     """
     requires_auth = True
     returns_json  = True
-    database_name = 'coordinates'
 
     def main(self):
         """ ajax -- sets an attribute for a location
@@ -46,10 +45,11 @@ class Setter(SmartView, DBView):
         except Exception, e:
             traceback.print_exc(e)
 
-def set_factory(attr):
+def set_factory(database_name, attr):
     """ """
     name  = 'set_' + attr
     bases = (Setter,)
     dct   = dict(url  = '/set_' + attr,
-                 attr = attr)
+                 attr = attr,
+                 database_name=database_name)
     return type(name, bases, dct)
