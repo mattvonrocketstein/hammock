@@ -5,18 +5,24 @@
     lots of this is pretty dumb, still need to figure out geocouch
 """
 
+from collections import namedtuple
+import demjson
 import couchdb
 from peak.util.imports import lazyModule
 from hammock.utils import AllStaticMethods
 from report import report as report
-
+from couchdb.mapping import ListField, TextField
 conf = lazyModule('hammock.conf')
 
 class DatabaseMixin(object): #couchdb.client.Database):
     """ """
     def _all_unique_attr(self, attrname):
         q = '''function(doc){emit(null, doc.%s);}'''%attrname
-        return set([x.value for x in self.query(q)])
+        out = []
+        for x in self.query(q):
+            tmp=x.value
+            if tmp not in out: out.append(tmp)
+        return out
 
     def all(self):
         """ return iterator for all rows """
@@ -35,41 +41,52 @@ class Server(couchdb.Server):
     def __getitem__(self, name):
         """ just brutal """
         result = super(Server,self).__getitem__(name)
-        result.__class__ = type('DynamicDatabase',(DatabaseMixin,result.__class__),{})
+        result.__class__ = type('DynamicDatabase', (DatabaseMixin,result.__class__), {})
         return result
-
 
 def get_db(db_name):
     db_name = db_name
-    try:
-        return setup()[db_name]
-    except:
-        report("\n\n------- Could not retrieve couch handle! ------- ")
-        raise
+    return setup()[db_name]
 
-def update_db(db, _id, dct):
+def update_db(db, _id, dct, schema=None):
     """  stupid.. have to delete and restore instead of update? """
-    report('updating db',[db, _id, dct])
-    doc = db[_id]
-    report('before',doc.items())
-    for x in dct:
-        doc[x] = dct[x]
 
-    # TODO: use db.update(doc) ?
-    db[doc.id] = doc
+    if not schema:
+        report('SCHEMA NOT PROVIDED!!!!!!!')
+        report('updating db',[db, _id, dct])
+        doc = db[_id]
+        report('before',doc.items())
 
-    report('after', doc)
-    report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
+        for x in dct:
+            doc[x] = dct[x]
 
+        # TODO: use db.update(doc) ?
+        #db[doc.id] = doc
+
+        report('after', doc)
+        report('updated "{id}" with new values for keys'.format(id=_id), dct.keys())
+    else:
+        doc = schema.load(db, _id)
+        for x in dct:
+            val = dct[x]
+            fieldtype = getattr(schema, x).__class__
+            if fieldtype==ListField:
+                val = demjson.decode(val)
+            elif fieldtype==TextField:
+                pass
+            else:
+                raise Exception, 'NIY:'+str(fieldtype)
+            setattr(doc, x, val)
+        doc.store(db)
 setup=Server
 
 def handle_dirty_entry(_id, db_name=None):
     """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it (faked)',[_id])
+    report('dirty entry in coordinates database.. removing it (faked)', [_id])
     db = get_db(db_name)
+    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
     #del db[_id]
 
-from collections import namedtuple
 def document2namedt(doc):
     """ """
     doc = dict(doc.items())
@@ -92,9 +109,9 @@ class Schema(object):
            >>> myschema._unpack['my_int_var'] = int
     """
     __metaclass__ = AllStaticMethods
-    _unpack  = {}
-    _render  = {}
-    _no_edit = []
+    _unpack       = {}
+    _render       = {}
+    _no_edit      = []
 
     @classmethod
     def _resolve(kls):

@@ -35,21 +35,24 @@ class Setter(SmartView, DBView):
                               A=this_attr,
                               V=request.form.keys()))
 
-            label = request.args.get(this_attr)
+            val = request.args.get(this_attr)
             # 'or' needed because we don't want to set
             # it as None if the ajax screws up
-            label = label or str(label)
-            report("in inner set with", [label])
-            update_db(db, _id, {this_attr:label})
+            val = val or str(val)
+            report("in inner set with", [val])
+            update_db(db, _id, {this_attr:val}, self.schema)
             return dict(result='ok')
+
         except Exception, e:
+            # tornado ate my exception?
             traceback.print_exc(e)
 
-def set_factory(database_name, attr):
+def set_factory(database_name, attr, schema=None):
     """ """
     name  = 'set_' + attr
     bases = (Setter,)
     dct   = dict(url  = '/set_' + attr,
                  attr = attr,
+                 schema=schema,
                  database_name=database_name)
     return type(name, bases, dct)
