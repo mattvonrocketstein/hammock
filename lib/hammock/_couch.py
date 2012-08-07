@@ -6,12 +6,16 @@
 """
 
 from collections import namedtuple
+
 import demjson
 import couchdb
 from peak.util.imports import lazyModule
+
 from hammock.utils import AllStaticMethods
 from report import report as report
 from couchdb.mapping import ListField, TextField
+from couchdb.mapping import Document
+
 conf = lazyModule('hammock.conf')
 
 class DatabaseMixin(object): #couchdb.client.Database):
@@ -136,23 +140,29 @@ def unpack_as_schema(q, schema):
 
     return p
 
+
+
 def resolve_schema(schema):
     """ resolves a schema to the implied default value """
     schema = schema()
-    out    = [ [x, getattr(schema,x)] for x in \
-              filter(lambda x: not x.startswith('_'), dir(schema))]
-    out    = dict(out)
-    for x in out:
+    if isinstance(schema, Document):
+        return schema
+    else:
+        report('old system for schema resolution..')
+        out    = [ [x, getattr(schema,x)] for x in \
+                  filter(lambda x: not x.startswith('_'), dir(schema))]
+        out    = dict(out)
+        for x in out:
 
-        # callable indicates jit value.. substitute it
-        if callable(out[x]):
-            out[x] = out[x]()
+            # callable indicates jit value.. substitute it
+            if callable(out[x]):
+                out[x] = out[x]()
 
-        # tuple indicates multiple choice.. default is the first one
-        elif type(out)==type(tuple()):
-            out[x] = out[x][0]
+            # tuple indicates multiple choice.. default is the first one
+            elif type(out)==type(tuple()):
+                out[x] = out[x][0]
 
-    return out
+        return out
 
 
 
