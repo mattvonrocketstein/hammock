@@ -91,16 +91,6 @@ def handle_dirty_entry(_id, db_name=None):
     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
     #del db[_id]
 
-def document2namedt(doc):
-    """ """
-    doc = dict(doc.items())
-    doc.pop('_rev')
-    _id = doc.pop('_id')
-    doc['id'] = _id
-    dnt = namedtuple('DynamicNamedTuple',' '.join(doc.keys()))
-    return dnt(**doc)
-
-
 class Schema(object):
     """ _unpack:
 
@@ -126,45 +116,21 @@ def unpack_as_schema(q, schema):
 
         TODO: verification for multiple choice?
     """
-    s = resolve_schema(schema).keys()
     # because it might be a request
     q = q if isinstance(q,dict) else dict(q.values.items())
-    p = {}
-    for x in q.keys():
-        if x in s:
-            p[x] = q[x]
-
-    for special in schema._unpack:
-        if special in p:
-            p[special] = schema._unpack[special](p[special])
-
-    return p
-
-
+    assert issubclass(schema, Document), 'old style schema?'
+    for var in q:
+        if isinstance(getattr(schema, var), ListField):
+            q[var]=demjson.decode(q[var])
+    return schema(**q)
 
 def resolve_schema(schema):
-    """ resolves a schema to the implied default value """
+    """ resolves a schema to the implied default value
+        TODO: deprecate this
+    """
     schema = schema()
     if isinstance(schema, Document):
         return schema
-    else:
-        report('old system for schema resolution..')
-        out    = [ [x, getattr(schema,x)] for x in \
-                  filter(lambda x: not x.startswith('_'), dir(schema))]
-        out    = dict(out)
-        for x in out:
-
-            # callable indicates jit value.. substitute it
-            if callable(out[x]):
-                out[x] = out[x]()
-
-            # tuple indicates multiple choice.. default is the first one
-            elif type(out)==type(tuple()):
-                out[x] = out[x][0]
-
-        return out
-
-
 
 class PersistentObject(object):
     """

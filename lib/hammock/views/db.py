@@ -9,13 +9,12 @@
 from flask import render_template_string, render_template
 
 #from couchdb.client import ResourceNotFound
-
+from couchdb.mapping import Document
 from corkscrew import View
 
 from report import report as report
 
 from hammock._couch import get_db, Server
-from hammock._couch import document2namedt
 from hammock.utils import memoized_property, use_local_template
 
 class DBView(View):
@@ -25,7 +24,8 @@ class DBView(View):
 
     def _list(self):
         """ similar to self.rows, except it returns named tuples """
-        return [ document2namedt(obj) for k, obj in self.rows ]
+        tmp = [ self.db_schema(**obj) for k, obj in self.rows ]
+        return tmp
 
     def get_url(self, hash):
         "e.g. /psa/cbe4af06308e90adc707559b85e27a52/wtf%20is%20velapene%20screen.mp3"
@@ -41,10 +41,14 @@ class DBView(View):
         return entry
 
     def schema(self):
-        """ returns a new, empty entry for the books database """
-        assert self.db_schema is not None,'override db_schema first..'
-        from hammock._couch import resolve_schema
-        return resolve_schema(self.db_schema)
+        """ returns a new, empty entry for the books database
+            TODO: stop returning the dictionary asap and give back a Document instance
+        """
+        assert self.db_schema is not None, 'override db_schema first..'
+        tmp = self.db_schema()
+        if isinstance(tmp, Document):
+            return tmp._data
+        return tmp
 
     @memoized_property
     def _db(self):

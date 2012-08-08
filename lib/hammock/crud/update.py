@@ -85,7 +85,7 @@ class Editable(object):
                                value=value)
 
     def _get_template(self, key, schema=None, value='no-value', loader=None):
-        """ get a (blank) template for this editing this key from the
+        """ get a (blank) template for editing this key from the
             database schema, failing that return the default
         """
         from_schema_definition = schema._render.get(key, None)
