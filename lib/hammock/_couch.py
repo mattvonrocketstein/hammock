@@ -13,7 +13,7 @@ from peak.util.imports import lazyModule
 
 from hammock.utils import AllStaticMethods
 from report import report as report
-from couchdb.mapping import ListField, TextField
+from couchdb.mapping import ListField, TextField, DateTimeField
 from couchdb.mapping import Document
 
 conf = lazyModule('hammock.conf')
@@ -120,8 +120,14 @@ def unpack_as_schema(q, schema):
     q = q if isinstance(q,dict) else dict(q.values.items())
     assert issubclass(schema, Document), 'old style schema?'
     for var in q:
-        if isinstance(getattr(schema, var), ListField):
-            q[var]=demjson.decode(q[var])
+        field = getattr(schema, var, None)
+        if field==None:
+            # might be interval value e.g. '_rev', etc
+            continue
+        if isinstance(field, ListField) and not isinstance(q[var], list):
+            q[var] = demjson.decode(q[var])
+        if isinstance(field, DateTimeField):
+            q[var] = getattr(schema, var)._to_python( q[var] )
     return schema(**q)
 
 def resolve_schema(schema):

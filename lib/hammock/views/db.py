@@ -13,7 +13,7 @@ from corkscrew import View
 
 from report import report as report
 
-from hammock._couch import get_db, Server
+from hammock._couch import get_db, Server, unpack_as_schema
 from hammock.utils import memoized_property, use_local_template
 
 class DBView(View):
@@ -22,12 +22,14 @@ class DBView(View):
     db_schema     = None
 
     def _list(self):
-        """ similar to self.rows, except it returns named tuples """
-        tmp = [ self.db_schema(**obj) for k, obj in self.rows ]
-        return tmp
-
-    def get_url(self, hash):
-        "e.g. /psa/cbe4af06308e90adc707559b85e27a52/wtf%20is%20velapene%20screen.mp3"
+        """ returns objects based on raw data from self.rows """
+        out=[]
+        for _id, _data in self.rows:
+            doc = unpack_as_schema(_data, self.db_schema)
+            if not getattr(doc, 'id'):
+                doc.id = _id
+            out.append(doc)
+        return out
 
     def build_new_entry(self):
         """ not really quite generic enough.
