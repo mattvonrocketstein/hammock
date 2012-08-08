@@ -6,9 +6,8 @@
           but from futon with the same user, it works fine.  wtf?
 """
 
-from flask import render_template_string, render_template
+from flask import render_template# render_template_string
 
-#from couchdb.client import ResourceNotFound
 from couchdb.mapping import Document
 from corkscrew import View
 
@@ -57,7 +56,6 @@ class DBView(View):
 
     @property
     def rows(self):
-        db         = self._db
         if self['tag']:
             keys = self.filter_where_tag_is(self['tag'])
             queryset = (self._db[x] for x in keys)
@@ -116,15 +114,40 @@ class CouchView(DBView):
     @use_local_template
     def list_databases(self):
         """
-        {% for x in databases%}
-        <a href="/_?db={{x}}"><b>{{x}}</b></a> <br/>
-        {%endfor%}
+        {# renders a list of all databases together with a link to their futon page #}
+        <table>
+          <tr><td>database name (click for detail)</td><td>link to futon</td></tr>
+          {% for x in databases%}
+          <tr>
+            <td><a href="/_?db={{x}}"><b>{{x}}</b></a></td>
+            <td><a href="{{couch_base}}{{x}}">(futon)</a></td>
+          </tr>
+          {%endfor%}
+        </table>
         """
-        return dict(databases=self.databases)
+        couch_base = self % 'couch.server' + '_utils/database.html?'
+        return dict(couch_base=couch_base, databases=self.databases)
+
+    @use_local_template
+    def list_views(self):
+        """
+        {# renders a list of all views.. #}
+        <table>
+          <tr><td>view</td><td>from module</td></tr>
+          {% for v in views %}
+          <tr>
+            <td><b>{{v.__name__}}</b></td>
+            <td>{{v.__class__.__module__}}</td>
+          </tr>
+          {%endfor%}
+        </table>
+        """
+        return dict(views=self.settings._installed_views)
 
     @use_local_template
     def db_detail(self, db_name):
         """
+        {# given a db, renders length, an example key value, and guesses at the schema #}
         <table>
         {% for x,y in stats%}
         <tr><td><b>{{x}}</b></td><td>{{y}}</td></tr>
@@ -140,13 +163,32 @@ class CouchView(DBView):
                          schema=key_style)
         return dict(stats=stats.items())
 
+    @use_local_template
+    def index(self):
+        """
+        <a href=/_?action=db> list databases</a><br/>
+        <a href=/_?action=views> list views</a><br/>
+        """
+        return dict()
     def main(self):
         """ dispatch to either the list function or the detail function"""
-        db_name = self['db']
-        return self.db_detail(db_name) if db_name else self.list_databases()
+
+        action  = self['action']
+        if action=='views':
+            return self.list_views()
+        elif action=='db':
+            db_name = self['db']
+            if db_name:
+                return self.db_detail(db_name)
+            else:
+                return self.list_databases()
+        else:
+            return self.index()
+
 
     @property
     def databases(self): return [ x for x in self.server ]
+
 
 class ViewView(View):
     """ view for showing information abouts views
