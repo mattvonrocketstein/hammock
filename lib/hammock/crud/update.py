@@ -91,6 +91,8 @@ class Editable(object):
         from_schema_definition = schema._render.get(key, None)
         from_best_guess = TYPE_MAP[type(getattr(schema,key))]
         if from_schema_definition:
-            return Template(from_schema_definition)
+            out=from_schema_definition
         else:
-            return Template(self.resolve_template_from_string(from_best_guess)[0])
+            out = self.resolve_template_from_string(from_best_guess)[0]
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        return Template(out)

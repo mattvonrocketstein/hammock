@@ -6,13 +6,14 @@ import urlparse
 import traceback
 from flask import request
 
-from corkscrew import SmartView
+from corkscrew import View
 from report import report as report
 
 from hammock._couch import update_db
 from .db import DBView
+from corkscrew.blueprint import BluePrint
 
-class Setter(SmartView, DBView):
+class Setter(DBView):
     """
     """
     requires_auth = True
@@ -47,12 +48,16 @@ class Setter(SmartView, DBView):
             # tornado ate my exception?
             traceback.print_exc(e)
 
+
 def set_factory(database_name, attr, schema=None):
     """ """
+    assert schema is not None, database_name
     name  = 'set_' + attr
     bases = (Setter,)
     dct   = dict(url  = '/set_' + attr,
                  attr = attr,
+                 blueprint = BluePrint(database_name+'__'+name),
                  schema=schema,
+                 db_schema=schema, #HACK
                  database_name=database_name)
     return type(name, bases, dct)
