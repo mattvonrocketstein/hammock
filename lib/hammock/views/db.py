@@ -10,7 +10,7 @@ from flask import render_template# render_template_string
 
 from couchdb.mapping import Document
 from corkscrew import View
-
+from corkscrew.blueprint import BluePrint
 from report import report as report
 
 from hammock._couch import get_db, Server, unpack_as_schema
@@ -20,6 +20,11 @@ class DBView(View):
     """ abstract view for helping with access to a particular couch database """
     database_name = None
     db_schema     = None
+
+    def __init__(self, *args, **kargs):
+        super(DBView, self).__init__(*args, **kargs)
+        assert self.db_schema,str(self)
+        self.db_schema.view = self
 
     def _list(self):
         """ returns objects based on raw data from self.rows """
@@ -108,11 +113,11 @@ class DBView(View):
         q = self._tag_filter_function(tag)
         return [ x.id for x in self._db.query(q) ]
 
-class CouchView(DBView):
+class CouchView(View):
     """ shows list of couch databases and detail views for each """
     requires_auth = True
     url = '/_'
-
+    blueprint  = BluePrint('couchview', __name__)
     @use_local_template
     def list_databases(self):
         """
