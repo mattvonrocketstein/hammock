@@ -4,7 +4,7 @@
 
     lots of this is pretty dumb, still need to figure out geocouch
 """
-
+import base64
 from collections import namedtuple
 
 import demjson
@@ -39,8 +39,7 @@ class Server(couchdb.Server):
     def __init__(self):
         super(Server,self).__init__(conf.settings['couch.server'])
         self.resource.credentials = ( conf.settings['couch.username'],
-                                      conf.settings['couch.password'] )
-        #self.resource.http.add_credentials(*self.resource.credentials)
+                                      base64.b64decode(conf.settings['couch.password']) )
 
     def __getitem__(self, name):
         """ just brutal """
