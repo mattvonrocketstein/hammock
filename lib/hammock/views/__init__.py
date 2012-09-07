@@ -12,7 +12,7 @@ from corkscrew.views import Favicon
 
 from report import report as report
 
-from .db import CouchView
+from hammock.views.administration import CouchView
 
 Login._template = """
 {% extends "layout.html" %}

@@ -5,7 +5,7 @@
 """
 
 import os
-from setuptools import setup, find_packages
+from os.path import expanduser
 
 try:
     from setuptools import setup, find_packages
