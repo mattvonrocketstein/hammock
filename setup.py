@@ -13,9 +13,7 @@ try:
 except ImportError:
     from distutils.core import setup
     def find_packages():
-        return [
-            'hammock',
-        ]
+        return ['hammock',]
     have_setuptools = False
 
 try:
