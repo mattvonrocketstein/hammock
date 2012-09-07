@@ -11,9 +11,10 @@ class CouchView(View):
     1) a list of couch databases and detail views for each,
     2) a list of views complete with class-name, defining-module, url
     """
+    url           = '/_'
     requires_auth = True
-    url = '/_'
-    blueprint  = BluePrint('couchview', __name__)
+    blueprint     = BluePrint('couchview', __name__)
+
     @use_local_template
     def list_databases(self):
         """
@@ -28,7 +29,7 @@ class CouchView(View):
           {%endfor%}
         </table>
         """
-        couch_base = self % 'couch.server' + '_utils/database.html?'
+        couch_base = (self % 'couch.server') + '_utils/database.html?'
         return dict(couch_base=couch_base, databases=self.databases)
 
     @use_local_template
@@ -40,13 +41,16 @@ class CouchView(View):
              <td>view</td>
              <td>url</td>
              <td>from module</td>
+             <td>related views</td>
           </tr>
           <tr><td colspan=3> <hr/></td></tr>
           {% for v in views %}
           <tr>
             <td><b>{{v.__name__}}</b></td>
-            <td>{{v.url}}</td>
-            <td>{{v.__class__.__module__}}</td>
+            <td><i>{{v.url}}</i></td>
+            <td><small>{{v.__class__.__module__}}<small></td>
+            <td>{%for x in v.__class__.related_views %}{{x.__name__}} | {%endfor%}</td>
+            <td>{{v.parent_url}}</td>
           </tr>
           {%endfor%}
         </table>
