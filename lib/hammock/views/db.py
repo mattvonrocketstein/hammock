@@ -9,8 +9,8 @@
 from flask import render_template# render_template_string
 
 from couchdb.mapping import Document
+
 from corkscrew import View
-from corkscrew.blueprint import BluePrint
 from report import report as report
 
 from hammock._couch import get_db, Server, unpack_as_schema
@@ -18,17 +18,45 @@ from hammock.utils import memoized_property, use_local_template
 
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
-    database_name = None
-    db_schema     = None
-    related_views = []
+
+    database_name  = None
+    db_schema      = None
+
     def __init__(self, *args, **kargs):
         super(DBView, self).__init__(*args, **kargs)
-        assert self.db_schema,str(self)
+        assert self.db_schema, 'expected db schema for {0}'.format(self)
         self.db_schema.view = self
+        ## DOC
+        if hasattr(self, 'Tags'):
+            from robotninja.crud import TagMixin
+            from corkscrew.blueprint import BluePrint
+            #if not issubclass(self.Tags, TagMixin):
+            #    raise Exception, 'bad tags instance'
+            if isinstance(self.Tags, TagMixin):
+                raise Exception, 'already initialized'
+            report('installing tagging')
+            #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+            clsname = 'DynTags{0}'.format(self.__class__.__name__)
+            self.Tags = type(clsname,
+                             (DBView, self.Tags, TagMixin),
+                             dict(blueprint=BluePrint(clsname),
+                                  db_schema = self.db_schema,
+                                  database_name = self.database_name,
+                                  parent_url=self.url,
+                                  methods = ['GET', 'POST'],
+                                  url=self.url+'/tags'))
+            self.Tags = self.Tags(*args, **kargs)
+
+
+    def install_into_app(self, app):
+        out = super(DBView,self).install_into_app(app)
+        if hasattr(self, 'Tags'):
+            out += [self.Tags]
+        return out
 
     def _list(self):
         """ returns objects based on raw data from self.rows """
-        out=[]
+        out = []
         for _id, _data in self.rows:
             doc = unpack_as_schema(_data, self.db_schema)
             if not getattr(doc, 'id'):
@@ -41,7 +69,10 @@ class DBView(View):
             still it depends on 'stamp' as pk
         """
         entry = self.schema()   # as dictionary
-        _id = entry['stamp']    # get new items key.
+        stamp = entry['stamp']
+        if not stamp:
+            raise ValueError, "stamp is not set.."
+        _id = stamp             # get new items key.
         self._db[_id] = entry   # save it..
         entry = self._db[_id]   # as document
         return entry
