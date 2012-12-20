@@ -19,15 +19,17 @@ class CouchView(View):
     def list_databases(self):
         """
         {# renders a list of all databases together with a link to their futon page #}
-        <table>
-          <tr><td>database name (click for detail)</td><td>link to futon</td></tr>
+        <center><table style="width:90%;">
           {% for x in databases%}
           <tr>
-            <td><a href="/_?db={{x}}"><b>{{x}}</b></a></td>
-            <td><a href="{{couch_base}}{{x}}">(futon)</a></td>
+            <td><b>{{x}}</b></td>
+            <td>
+               <a href="/_?action=db&db={{x}}">view schema</a></td><td>
+               <a href="{{couch_base}}{{x}}">browse database</a>
+            </td>
           </tr>
           {%endfor%}
-        </table>
+        </table></center>
         """
         couch_base = (self % 'couch.server') + '_utils/database.html?'
         return dict(couch_base=couch_base, databases=self.databases)
@@ -83,6 +85,7 @@ class CouchView(View):
         <a href=/_?action=views> list views</a><br/>
         """
         return dict()
+
     def main(self):
         """ dispatch to either the list function or the detail function"""
 
@@ -100,4 +103,7 @@ class CouchView(View):
 
 
     @property
-    def databases(self): return [ x for x in self.server ]
+    def databases(self):
+        dbs = [getattr(v,'database_name',None) for v in self.settings._installed_views]
+        dbs = list(set([ x for x in dbs if x]))
+        return dbs
