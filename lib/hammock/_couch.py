@@ -105,6 +105,8 @@ class Schema(object):
     _unpack       = {}
     _render       = {}
     _no_edit      = []
+    def save(self,db):
+        return update_db(db, self.id, dict(self.items()), schema=self)
 
     @classmethod
     def _resolve(kls):

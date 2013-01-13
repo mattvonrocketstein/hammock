@@ -101,9 +101,9 @@ class CouchView(View):
         else:
             return self.index()
 
-
     @property
     def databases(self):
-        dbs = [getattr(v,'database_name',None) for v in self.settings._installed_views]
+        """ TODO: move this to the settings object itself """
+        dbs = [ getattr(v, 'database_name', None) for v in self.settings._installed_views ]
         dbs = list(set([ x for x in dbs if x]))
         return dbs
