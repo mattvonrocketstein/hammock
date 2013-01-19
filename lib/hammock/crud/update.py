@@ -6,9 +6,10 @@
 
 #TODO: move to utilities
 #from hammock.util import nomprivate_editable
-
+import demjson
 from collections import defaultdict
 
+from couchdb.mapping import ListField
 from jinja2 import Template
 from flask import render_template
 
@@ -81,8 +82,17 @@ class Editable(object):
                                obj=editable_parts)
     def _get_widget(self, key, value=None, schema=None):
         template = self._get_template(key, value=value, schema=schema,)
-        return template.render(key=key, default=getattr(schema,key),
-                               value=value)
+        field = getattr(schema, key, None)
+        if field is None:
+            report('oops, could not get field for {0} from {1}'.format(key, schema))
+        if isinstance(field, ListField):
+            # get rid of u's for stuff like [u"foo",]
+            value = demjson.encode(value)
+        result = template.render(key=key, default="DEFAULT-IS-DEPRECATED",
+                                 # because we dont want to have stuff like
+                                 # value="["one"]" in the html
+                                 value=value.replace('"', "'"))
+        return result
 
     def _get_template(self, key, schema=None, value='no-value', loader=None):
         """ get a (blank) template for editing this key from the
@@ -94,5 +104,4 @@ class Editable(object):
             out=from_schema_definition
         else:
             out = self.resolve_template_from_string(from_best_guess)[0]
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         return Template(out)

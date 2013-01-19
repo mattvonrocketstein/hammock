@@ -1,4 +1,4 @@
-demjson
+demjson==1.6
 flask
 couchdb==0.8
 git+git://github.com/mattvonrocketstein/reporting.git#egg=reporting
