@@ -91,7 +91,7 @@ class Editable(object):
         result = template.render(key=key, default="DEFAULT-IS-DEPRECATED",
                                  # because we dont want to have stuff like
                                  # value="["one"]" in the html
-                                 value=str(value).replace('"', "'"))
+                                 value=unicode(value).replace('"', "'"))
         return result
 
     def _get_template(self, key, schema=None, value='no-value', loader=None):
