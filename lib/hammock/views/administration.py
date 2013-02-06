@@ -43,20 +43,22 @@ class CouchView(View):
              <td>view</td>
              <td>url</td>
              <td>from module</td>
-             <td>related views</td>
+             <td>schema</td>
           </tr>
-          <tr><td colspan=3> <hr/></td></tr>
+          <tr><td colspan=4> <hr/></td></tr>
           {% for v in views %}
           <tr>
             <td><b>{{v.__name__}}</b></td>
             <td><i>{{v.url}}</i></td>
             <td><small>{{v.__class__.__module__}}<small></td>
-            <td>{%for x in v.__class__.related_views %}{{x.__name__}} | {%endfor%}</td>
-            <td>{{v.parent_url}}</td>
+            <td>
+              {%if v.db_schema%}{{v.db_schema.__name__}}{%else%}&nbsp;{%endif%}
+            </td>
           </tr>
           {%endfor%}
         </table>
         """
+        # TODO: might as well organize 'views' by schema
         return dict(views=self.settings._installed_views)
 
     @use_local_template
