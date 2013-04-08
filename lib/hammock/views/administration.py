@@ -52,7 +52,11 @@ class CouchView(View):
             <td><i>{{v.url}}</i></td>
             <td><small>{{v.__class__.__module__}}<small></td>
             <td>
-              {%if v.db_schema%}{{v.db_schema.__name__}}{%else%}&nbsp;{%endif%}
+            {% if v.db_schema %}
+              <a href="/_?action=reindex&dotpath={{v.db_schema.__module__}}.{{v.db_schema.__name__}}">
+                {{v.db_schema.__name__}}
+              </a>
+              {% else %}&nbsp;{% endif %}
             </td>
           </tr>
           {%endfor%}

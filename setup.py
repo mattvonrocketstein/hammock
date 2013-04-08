@@ -21,14 +21,6 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-if have_setuptools:
-    add_keywords = dict( entry_points = \
-                         { 'console_scripts': \
-                           ['hammock = hammock.bin._hammock:entry', ]
-                         }, )
-else:
-    add_keywords = dict( scripts = ['hammock'], )
-
 setup(
     name         ='hammock',
     version      = '.1',
@@ -51,5 +43,4 @@ setup(
         'Programming Language :: Python :: 2',
         'Operating System :: OS Independent', ],
     cmdclass = {'build_py': build_py},
-    **add_keywords
 )
