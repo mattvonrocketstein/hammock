@@ -5,6 +5,7 @@
     lots of this is pretty dumb, still need to figure out geocouch
 """
 import base64
+import itertools
 from collections import namedtuple
 
 import demjson
@@ -16,21 +17,67 @@ from report import report as report
 from couchdb.mapping import ListField, TextField, DateTimeField
 from couchdb.mapping import Document
 
+def couchdb_pager(db, view_name='_all_docs',
+                  startkey=None, startkey_docid=None,
+                  endkey=None, endkey_docid=None, bulk=5000):
+    """ stolen from:
+    http://blog.marcus-brinkmann.de/2011/09/17/a-better-iterator-for-python-couchdb
+    """
+    # Request one extra row to resume the listing there later.
+    options = {'limit': bulk + 1}
+    if startkey:
+        options['startkey'] = startkey
+        if startkey_docid:
+            options['startkey_docid'] = startkey_docid
+    if endkey:
+        options['endkey'] = endkey
+        if endkey_docid:
+            options['endkey_docid'] = endkey_docid
+    done = False
+    while not done:
+        view = db.view(view_name, **options)
+        rows = []
+        # If we got a short result (< limit + 1), we know we are done.
+        if len(view) <= bulk:
+            done = True
+            rows = view.rows
+        else:
+            # Otherwise, continue at the new start position.
+            rows = view.rows[:-1]
+            last = view.rows[-1]
+            options['startkey'] = last.key
+            options['startkey_docid'] = last.id
+
+        for row in rows:
+            yield row.id
+
 class DatabaseMixin(object): #couchdb.client.Database):
     """ """
     def _all_unique_attr(self, attrname):
         return [x.key for x in self.query(
-            map_fun='''function(doc){emit(doc.%s, null);}'''%attrname,
+            map_fun='''function(doc){emit(doc.%s, doc);}'''%attrname,
             reduce_fun="""function(keys, values){return true}""",
             group=True)]
     _unique_values_for_fieldname = _all_unique_attr
 
+    def __getitem__(self, x):
+        if isinstance(x, slice):
+            return list(itertools.islice(couchdb_pager(self),
+                                                       x.start,
+                                                       x.stop))
+        else:
+            return couchdb.client.Database.__getitem__(self, x)
+
+    def _matching_values(self, field=None, value=None):
+        return [ row for row in \
+                 self.query("function(doc){emit(doc."+field+", doc)}",
+                                key=value) ]
     def keys(self):
         return [k for k in self]
 
     def all(self):
         """ return iterator for all <Rows> """
-        query = '''function(doc){ emit(doc._id,doc);} '''
+        query = '''function(doc){ emit(doc._id, doc);} '''
         return (x for x in self.query(query))
 
 
@@ -44,7 +91,7 @@ class Server(couchdb.Server):
                                       base64.b64decode(conf.settings['couch.password']) )
 
     def __getitem__(self, name):
-        """ just brutal """
+        """ FIXME: just brutal.. """
         result = super(Server,self).__getitem__(name)
         result.__class__ = type('DynamicDatabase', (DatabaseMixin, result.__class__), {})
         return result
