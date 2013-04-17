@@ -16,27 +16,29 @@ from report import report as report
 from couchdb.mapping import ListField, TextField, DateTimeField
 from couchdb.mapping import Document
 
-conf = lazyModule('hammock.conf')
-
 class DatabaseMixin(object): #couchdb.client.Database):
     """ """
     def _all_unique_attr(self, attrname):
-        q = '''function(doc){emit(null, doc.%s);}'''%attrname
-        out = []
-        for x in self.query(q):
-            tmp=x.value
-            if tmp not in out: out.append(tmp)
-        return out
+        return [x.key for x in self.query(
+            map_fun='''function(doc){emit(doc.%s, null);}'''%attrname,
+            reduce_fun="""function(keys, values){return true}""",
+            group=True)]
+    _unique_values_for_fieldname = _all_unique_attr
+
+    def keys(self):
+        return [k for k in self]
 
     def all(self):
-        """ return iterator for all rows """
+        """ return iterator for all <Rows> """
         query = '''function(doc){ emit(doc._id,doc);} '''
         return (x for x in self.query(query))
 
 
 class Server(couchdb.Server):
     """ """
-    def __init__(self):
+    def __init__(self, conf=None):
+        if conf is None:
+            conf = lazyModule('hammock.conf')
         super(Server,self).__init__(conf.settings['couch.server'])
         self.resource.credentials = ( conf.settings['couch.username'],
                                       base64.b64decode(conf.settings['couch.password']) )
@@ -44,7 +46,7 @@ class Server(couchdb.Server):
     def __getitem__(self, name):
         """ just brutal """
         result = super(Server,self).__getitem__(name)
-        result.__class__ = type('DynamicDatabase', (DatabaseMixin,result.__class__), {})
+        result.__class__ = type('DynamicDatabase', (DatabaseMixin, result.__class__), {})
         return result
 
 def get_db(db_name):
