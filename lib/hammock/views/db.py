@@ -106,7 +106,7 @@ class DBView(View):
                 yield row.id, row.value
 
     def rows_at(self, attr_name):
-        """ """
+        """ DEPRECATE """
         q = '''function(doc){emit(null, doc.%s);}''' % attr_name
         out = [ x.value for x in self._db.query(q) ]
         return out
