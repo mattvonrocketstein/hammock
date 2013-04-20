@@ -35,37 +35,6 @@ class CouchView(View):
         return dict(couch_base=couch_base, databases=self.databases)
 
     @use_local_template
-    def list_views(self):
-        """
-        {# renders a list of all views.. #}
-        <table>
-          <tr>
-             <td>view</td>
-             <td>url</td>
-             <td>from module</td>
-             <td>schema</td>
-          </tr>
-          <tr><td colspan=4> <hr/></td></tr>
-          {% for v in views %}
-          <tr>
-            <td><b>{{v.__name__}}</b></td>
-            <td><i>{{v.url}}</i></td>
-            <td><small>{{v.__class__.__module__}}<small></td>
-            <td>
-            {% if v.db_schema %}
-              <a href="/_?action=reindex&dotpath={{v.db_schema.__module__}}.{{v.db_schema.__name__}}">
-                {{v.db_schema.__name__}}
-              </a>
-              {% else %}&nbsp;{% endif %}
-            </td>
-          </tr>
-          {%endfor%}
-        </table>
-        """
-        # TODO: might as well organize 'views' by schema
-        return dict(views=self.settings._installed_views)
-
-    @use_local_template
     def db_detail(self, db_name):
         """
         {# given a db, renders length, an example key value, and guesses at the schema #}
@@ -88,7 +57,7 @@ class CouchView(View):
     def index(self):
         """
         <a href=/_?action=db> list databases</a><br/>
-        <a href=/_?action=views> list views</a><br/>
+        <a href=/__views__> list views</a><br/>
         """
         return dict()
 
@@ -96,9 +65,7 @@ class CouchView(View):
         """ dispatch to either the list function or the detail function"""
 
         action  = self['action']
-        if action=='views':
-            return self.list_views()
-        elif action=='db':
+        if action=='db':
             db_name = self['db']
             if db_name:
                 return self.db_detail(db_name)

@@ -17,7 +17,7 @@ from report import report as report
 from couchdb.mapping import ListField, TextField, DateTimeField
 from couchdb.mapping import Document
 
-def couchdb_pager(db, view_name='_all_docs',
+def couchdb_pager(db, view_name='_all_docs', query=None,
                   startkey=None, startkey_docid=None,
                   endkey=None, endkey_docid=None, bulk=5000):
     """ stolen from:
@@ -35,7 +35,11 @@ def couchdb_pager(db, view_name='_all_docs',
             options['endkey_docid'] = endkey_docid
     done = False
     while not done:
-        view = db.view(view_name, **options)
+        # query gets to override any mention of view
+        if query is not None:
+            view = db.query(query, **options)
+        else:
+            view = db.view(view_name, **options)
         rows = []
         # If we got a short result (< limit + 1), we know we are done.
         if len(view) <= bulk:
@@ -60,11 +64,37 @@ class DatabaseMixin(object): #couchdb.client.Database):
             group=True)]
     _unique_values_for_fieldname = _all_unique_attr
 
-    def __getitem__(self, x):
+    def delete_all(self,really=False):
+        if not really:
+            report('seriously?  well ok, but pass `really=True`')
+        else:
+            for x in self:
+                report('deleting: '+str(x))
+                del self[x]
+
+    def __mod__(self, q):
+        """ for helping to paginate a defered query.
+            use like this:
+              db_keys = (database%query_javascript)[slice_start:slice_end]
+        """
+        pager = couchdb_pager(self, query=q)
+        class DatabaseProxy(object):
+            def __getitem__(himself, x):
+                return self.__getitem__(x, pager=pager)
+        return DatabaseProxy()
+
+    def __getitem__(self, x, pager=None):
+        """ the better to paginate with.
+            use it like this:
+              >>> database[key]   # works as usual
+              >>> database[0:100] # returns 100 keys
+        """
         if isinstance(x, slice):
-            return list(itertools.islice(couchdb_pager(self),
-                                                       x.start,
-                                                       x.stop))
+            if pager is None:
+                pager = couchdb_pager(self)
+            return list(itertools.islice(pager,
+                                         x.start,
+                                         x.stop))
         else:
             return couchdb.client.Database.__getitem__(self, x)
 
