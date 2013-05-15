@@ -126,6 +126,19 @@ class Server(couchdb.Server):
         result.__class__ = type('DynamicDatabase', (DatabaseMixin, result.__class__), {})
         return result
 
+    def futon_url(self):
+        url = self.resource.url
+        if not url.endswith('/'): url+='/'
+        return url + '_utils/'
+
+    def document_url(self, db_name, doc_id):
+        # http://localhost:5999/_utils/document.html?ixle_settings/ignore
+        return "{0}document.html?{1}/{2}".format(
+            self.futon_url(), db_name, doc_id)
+
+    def admin_url(self, db_name):
+        return self.futon_url() + 'database.html?' + db_name
+
 def get_db(db_name):
     db_name = db_name
     return setup()[db_name]
