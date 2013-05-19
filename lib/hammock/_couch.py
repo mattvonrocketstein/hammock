@@ -16,6 +16,7 @@ from hammock.utils import AllStaticMethods
 from report import report as report
 from couchdb.mapping import ListField, TextField, DateTimeField
 from couchdb.mapping import Document
+from couchdb.client import Database as OriginalDatabase
 
 def couchdb_pager(db, view_name='_all_docs', query=None,
                   startkey=None, startkey_docid=None,
@@ -55,7 +56,7 @@ def couchdb_pager(db, view_name='_all_docs', query=None,
         for row in rows:
             yield row.id
 
-class DatabaseMixin(object): #couchdb.client.Database):
+class DatabaseMixin(object):
     """ """
     def _all_unique_attr(self, attrname):
         return [x.key for x in self.query(
@@ -126,6 +127,13 @@ class Server(couchdb.Server):
         result.__class__ = type('DynamicDatabase', (DatabaseMixin, result.__class__), {})
         return result
 
+    def db_url(self, db_or_dbname):
+        if isinstance(db_or_dbname, OriginalDatabase):
+            dbname = db_or_dbname._name
+        else:
+            dbname = db_or_dbname
+        return self.futon_url() + 'database.html?{0}'.format(dbname)
+
     def futon_url(self):
         url = self.resource.url
         if not url.endswith('/'): url+='/'
@@ -136,8 +144,8 @@ class Server(couchdb.Server):
         return "{0}document.html?{1}/{2}".format(
             self.futon_url(), db_name, doc_id)
 
-    def admin_url(self, db_name):
-        return self.futon_url() + 'database.html?' + db_name
+    admin_url = db_url
+    edit_url = db_url
 
 def get_db(db_name):
     db_name = db_name
