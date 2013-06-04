@@ -78,6 +78,11 @@ class DatabaseMixin(object):
             use like this:
               db_keys = (database%query_javascript)[slice_start:slice_end]
         """
+        report("running paged-query: ")
+        report(
+            report.highlight.javascript(q),
+            plain=True)
+        report.console.draw_line()
         pager = couchdb_pager(self, query=q)
         class DatabaseProxy(object):
             def __getitem__(himself, x):
@@ -117,9 +122,9 @@ class Server(couchdb.Server):
     def __init__(self, conf=None):
         if conf is None:
             conf = lazyModule('hammock.conf')
-        super(Server,self).__init__(conf.settings['couch.server'])
-        self.resource.credentials = ( conf.settings['couch.username'],
-                                      base64.b64decode(conf.settings['couch.password']) )
+        super(Server,self).__init__(conf.settings['couch']['server'])
+        self.resource.credentials = ( conf.settings['couch']['username'],
+                                      base64.b64decode(conf.settings['couch']['password']) )
 
     def __getitem__(self, name):
         """ FIXME: just brutal.. """
