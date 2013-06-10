@@ -122,7 +122,10 @@ class Server(couchdb.Server):
     def __init__(self, conf=None):
         if conf is None:
             conf = lazyModule('hammock.conf')
-        super(Server,self).__init__(conf.settings['couch']['server'])
+        server = 'http://{0}:{1}/'.format(
+            conf.settings['couch']['host'],
+            conf.settings['couch']['port'])
+        super(Server,self).__init__(server)
         self.resource.credentials = ( conf.settings['couch']['username'],
                                       base64.b64decode(conf.settings['couch']['password']) )
 
