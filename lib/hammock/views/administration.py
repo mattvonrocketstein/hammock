@@ -31,7 +31,12 @@ class CouchView(View):
           {%endfor%}
         </table></center>
         """
-        couch_base = (self % 'couch.server') + '_utils/database.html?'
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        settings = self.settings['couch']
+        couch_base = "http://{0}:{1}/{2}".format(
+            settings['host'],
+            settings['port'],
+            '_utils/database.html?')
         return dict(couch_base=couch_base, databases=self.databases)
 
     @use_local_template
@@ -56,23 +61,33 @@ class CouchView(View):
     @use_local_template
     def index(self):
         """
+        <a href=/_?action=tro> show template search order</a><br/>
         <a href=/_?action=db> list databases</a><br/>
         <a href=/__views__> list views</a><br/>
         """
         return dict()
 
+    @use_local_template
+    def action_tro(self):
+        """ <h2>app.jinja_loader.searchpath:</h2>
+        {%for p in searchpath%}<p>{{p}}</p>{%endfor%} """
+        return dict(searchpath=self.app.jinja_loader.searchpath)
+
     def main(self):
         """ dispatch to either the list function or the detail function"""
 
-        action  = self['action']
-        if action=='db':
+        def db_action():
             db_name = self['db']
             if db_name:
                 return self.db_detail(db_name)
             else:
                 return self.list_databases()
-        else:
-            return self.index()
+
+        action  = self['action']
+        if action=='db':    return db_action()
+        elif action=='tro': return self.action_tro()
+        else:               return self.index()
+
 
     @property
     def databases(self):
