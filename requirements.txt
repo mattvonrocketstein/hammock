@@ -6,4 +6,3 @@ git+git://github.com/mattvonrocketstein/corkscrew.git#egg=corkscrew
 pygments # required by reporting
 Importing==1.10
 tornado
-importlib
