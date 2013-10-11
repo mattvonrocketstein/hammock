@@ -47,7 +47,8 @@ class Setter(DBView):
         except Exception, e:
             # tornado ate my exception?
             traceback.print_exc(e)
-
+            self.flash(str(e))
+            return dict(error=str(e))
 
 def set_factory(database_name, attr, schema=None):
     """ """
