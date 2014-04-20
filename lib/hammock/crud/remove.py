@@ -15,6 +15,6 @@ class Removable(object):
     @authorization_required
     def remove(self):
         _id   = self['remove']
-        report("Removing {id} from {db}", id=_id, db=self.database_name)
-        del self._db[_id]
+        report("Removing {id} from {db}", id=_id, db=self.db_schema)
+        self.db_schema.objects.get(id=_id).delete()
         return jsonify(dict(ok='true'))

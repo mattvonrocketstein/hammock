@@ -9,7 +9,7 @@
 import demjson
 from collections import defaultdict
 
-from couchdb.mapping import ListField
+from mongoengine import ListField
 from jinja2 import Template
 from flask import render_template
 
@@ -24,7 +24,9 @@ def nonprivate_editable(key, db_schema):
 TYPE_MAP = defaultdict(lambda: 'widgets/string_type.html')
 TYPE_MAP.update({ type('') : 'widgets/string_type.html',
                   type(u'') : 'widgets/string_type.html',
-                  type(tuple()) : 'widgets/tuple_type.html' })
+                  type(tuple()) : 'widgets/tuple_type.html',
+                  type([]) : 'widgets/tuple_type.html',
+                  })
 
 class Editable(object):
     """
@@ -60,8 +62,12 @@ class Editable(object):
         _id   = entry.id
 
         editable_parts = []
-        items = [ [key, val] for key,val in entry.items() \
-                  if nonprivate_editable(key, self.db_schema) ]
+
+        #items = [ [key, val] for key, val in entry.to_json().items() \
+        #          if nonprivate_editable(key, self.db_schema) ]
+        items = entry._data.copy()
+        items.pop('id')
+        items = [ [k,v] for k,v in items.items() if nonprivate_editable(k, self.db_schema)]
         for key, val in items:
             widget = self._get_widget(key, value=val, schema=self.db_schema)
             editable_parts.append([key, widget])
@@ -69,13 +75,14 @@ class Editable(object):
         # find keys unexpected missing from request that are still in schema.
         # this allows updated schema's to still present correct information
         # in ajax update dialogs
-        example_entry = self.db_schema._resolve()
-        tmp = set(example_entry.keys()) - \
+        tmp = set(self.db_schema._fields.keys()) - \
               set(dict(items).keys()).union(set(self.db_schema._no_edit))
         for key in tmp:
-            editable_parts.append([key, self._get_widget(key,
-                                                   value = example_entry[key],
-                                                   schema=self.db_schema)])
+            editable_parts.append(
+                [key,
+                 self._get_widget(key,
+                                  value = self.db_schema._fields[key].default,
+                                  schema=self.db_schema)])
         return render_template(self.edit_template,
                                update_url=self.update_url,
                                id=_id,
@@ -98,6 +105,7 @@ class Editable(object):
         """ get a (blank) template for editing this key from the
             database schema, failing that return the default
         """
+
         from_schema_definition = schema._render.get(key, None)
         from_best_guess = TYPE_MAP[type(getattr(schema,key))]
         if from_schema_definition:

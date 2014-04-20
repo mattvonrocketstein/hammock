@@ -112,22 +112,10 @@ class DBView(View):
         return out
 
     def _all_unique_tags(self):
-        """ TODO: remove special case in Slash when coordinates
-                  database supports "tags" instead of just "tag"
-        """
-        out = self.rows_at('tags')
-        if out:
-            out = reduce(lambda x,y: x+y, out)
-            out = set(out)
-        return out
+        return self.db_schema.objects.distinct('tags')
 
     def get_entry(self, _id):
-        """ """
-        #try:
-        return self._db[_id]
-        #except ResourceNotFound,e:
-        #    report('resource with key "{id}" not found',id=_id)
-        #    raise
+        return self.db_schema.objects.get(id=_id)
 
     @memoized_property
     def server(self): return Server()

@@ -14,7 +14,9 @@ from peak.util.imports import lazyModule
 
 from hammock.utils import AllStaticMethods
 from report import report as report
-from couchdb.mapping import ListField, TextField, DateTimeField
+from mongoengine import Document as mDocument
+from mongoengine import ListField, StringField, DateTimeField
+#from couchdb.mapping import
 from couchdb.mapping import Document
 from couchdb.client import Database as OriginalDatabase
 
@@ -216,10 +218,6 @@ class Schema(object):
     def save(self,db):
         return update_db(db, self.id, dict(self.items()), schema=self)
 
-    @classmethod
-    def _resolve(kls):
-        return resolve_schema(kls)
-
 def unpack_as_schema(q, schema):
     """ unpack a request/dict into a dictionary according to this schema
 
@@ -227,7 +225,7 @@ def unpack_as_schema(q, schema):
     """
     # because it might be a request
     q = q if isinstance(q,dict) else dict(q.values.items())
-    assert issubclass(schema, Document), 'old style schema?'
+    assert issubclass(schema, mDocument), 'old style schema?'
     for var in q:
         field = getattr(schema, var, None)
         if field==None:
@@ -235,17 +233,9 @@ def unpack_as_schema(q, schema):
             continue
         if isinstance(field, ListField) and not isinstance(q[var], list):
             q[var] = demjson.decode(q[var])
-        if isinstance(field, DateTimeField):
-            q[var] = getattr(schema, var)._to_python( q[var] )
+        #if isinstance(field, DateTimeField):
+        #    q[var] = getattr(schema, var)._to_python( q[var] )
     return schema(**q)
-
-def resolve_schema(schema):
-    """ resolves a schema to the implied default value
-        TODO: deprecate this
-    """
-    schema = schema()
-    if isinstance(schema, Document):
-        return schema
 
 class PersistentObject(object):
     """
