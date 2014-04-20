@@ -1,20 +1,17 @@
 """ hammock.views.db
-
-    DB view for admin convenience
-
-    NOTE: server.create('database-name') returns 401-unauthorized,
-          but from futon with the same user, it works fine.  wtf?
 """
 
-from flask import render_template# render_template_string
+from flask import render_template
 
 from couchdb.mapping import Document
 
 from corkscrew import View
+from corkscrew.blueprint import BluePrint
 from report import report as report
 
 from hammock._couch import get_db, Server, unpack_as_schema
 from hammock.utils import memoized_property, use_local_template
+from .tags import TagMixin
 
 class DBView(View):
     """ abstract view for helping with access to a particular couch database """
@@ -27,26 +24,24 @@ class DBView(View):
         assert self.db_schema, 'expected db schema for {0}'.format(self)
         self.db_schema.view = self
         ## DOC
-        if hasattr(self, 'Tags'):
-            from robotninja.crud import TagMixin
-            from corkscrew.blueprint import BluePrint
-            #if not issubclass(self.Tags, TagMixin):
-            #    raise Exception, 'bad tags instance'
-            if isinstance(self.Tags, TagMixin):
-                raise Exception, 'already initialized'
-            report('installing tagging')
-            #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-            clsname = 'DynTags{0}'.format(self.__class__.__name__)
-            self.Tags = type(clsname,
-                             (DBView, self.Tags, TagMixin),
-                             dict(blueprint=BluePrint(clsname),
-                                  db_schema = self.db_schema,
-                                  database_name = self.database_name,
-                                  parent_url=self.url,
-                                  methods = ['GET', 'POST'],
-                                  url=self.url+'/tags'))
-            self.Tags = self.Tags(*args, **kargs)
+        if getattr(self, 'Tags', False):
+            self._setup_tags(*args, **kargs)
 
+    def _setup_tags(self, *args, **kargs):
+        if isinstance(self.Tags, TagMixin):
+            raise Exception, 'already initialized'
+        report('installing tagging')
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        clsname = 'DynTags{0}'.format(self.__class__.__name__)
+        self.Tags = type(clsname,
+                         (DBView, self.Tags, TagMixin),
+                         dict(blueprint=BluePrint(clsname),
+                              db_schema = self.db_schema,
+                              database_name = self.database_name,
+                              parent_url=self.url,
+                              methods = ['GET', 'POST'],
+                              url=self.url+'/tags'))
+        self.Tags = self.Tags(*args, **kargs)
 
     def install_into_app(self, app):
         out = super(DBView,self).install_into_app(app)
@@ -54,27 +49,12 @@ class DBView(View):
             out += [self.Tags]
         return out
 
-    def _list(self):
-        """ returns objects based on raw data from self.rows """
-        out = []
-        for _id, _data in self.rows:
-            doc = unpack_as_schema(_data, self.db_schema)
-            if not getattr(doc, 'id'):
-                doc.id = _id
-            out.append(doc)
-        return out
-
     def build_new_entry(self):
         """ not really quite generic enough.
             still it depends on 'stamp' as pk
         """
-        entry = self.schema()   # as dictionary
-        stamp = entry['stamp']
-        if not stamp:
-            raise ValueError, "stamp is not set.."
-        _id = stamp             # get new items key.
-        self._db[_id] = entry   # save it..
-        entry = self._db[_id]   # as document
+        entry = self.db_schema()   # as dictionary
+        entry.save()
         return entry
 
     def schema(self):
@@ -125,7 +105,6 @@ class DBView(View):
         out = render_template('js/tag_query.js', tag=tag)
         print '-'*70, out, '-'*70
         return out
-        #'''function(doc){if(doc.tag=='%s'){emit(null, doc);}}'''%tag
 
     def filter_where_tag_is(self, tag):
         """ NOTE: returns keys only! """
