@@ -12,8 +12,6 @@ from corkscrew.views import Favicon
 
 from report import report as report
 
-from hammock.views.administration import CouchView
-
 Login._template = """
 {% extends "layout.html" %}
 {% block title %}Sign In{% endblock %}
@@ -37,6 +35,4 @@ __views__= [
     # corkscrew standard views
     Favicon, Login, Logout,
 
-    # couch views
-    CouchView,
     ]

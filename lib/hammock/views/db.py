@@ -3,18 +3,15 @@
 
 from flask import render_template
 
-from couchdb.mapping import Document
-
 from corkscrew import View
 from corkscrew.blueprint import BluePrint
 from report import report as report
 
-from hammock._couch import get_db, Server, unpack_as_schema
 from hammock.utils import memoized_property, use_local_template
 from .tags import TagMixin
 
 class DBView(View):
-    """ abstract view for helping with access to a particular couch database """
+    """ abstract view for helping with access to a particular database """
 
     database_name  = None
     db_schema      = None
@@ -31,7 +28,6 @@ class DBView(View):
         if isinstance(self.Tags, TagMixin):
             raise Exception, 'already initialized'
         report('installing tagging')
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         clsname = 'DynTags{0}'.format(self.__class__.__name__)
         self.Tags = type(clsname,
                          (DBView, self.Tags, TagMixin),
@@ -97,8 +93,8 @@ class DBView(View):
     def get_entry(self, _id):
         return self.db_schema.objects.get(id=_id)
 
-    @memoized_property
-    def server(self): return Server()
+    #@memoized_property
+    #def server(self): return Server()
 
     def _tag_filter_function(self, tag):
         """ TODO: dryer"""

@@ -1,6 +1,6 @@
 """ hammock._math
 
-    a bunch of hacks until i figure out how to use geocouch.
+    a bunch of hacks until i figure out how to use geo-mongo.
 """
 def all_floats(points):
     _points = []

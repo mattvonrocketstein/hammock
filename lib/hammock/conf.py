@@ -6,8 +6,6 @@ from peak.util.imports import lazyModule
 
 from corkscrew import Settings as _Settings
 
-couch = lazyModule('hammock._couch')
-
 class Settings(_Settings):
     """
     """
@@ -31,5 +29,4 @@ class Settings(_Settings):
         """
         """
         dct = super(Settings,self).shell_namespace()
-        dct.update(db=couch.Server())
         return dct
