@@ -3,7 +3,6 @@
 
 from flask import jsonify
 
-from hammock.views.db import DBView
 from hammock.utils import authorization_required
 
 from report import report

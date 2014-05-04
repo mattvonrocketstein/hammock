@@ -7,7 +7,7 @@ from corkscrew import View
 from corkscrew.blueprint import BluePrint
 from report import report as report
 
-from hammock.utils import memoized_property, use_local_template
+from hammock.utils import memoized_property
 from .tags import TagMixin
 
 class DBView(View):
@@ -55,12 +55,11 @@ class DBView(View):
 
     def schema(self):
         """ returns a new, empty entry for the books database
-            TODO: stop returning the dictionary asap and give back a Document instance
         """
-        assert self.db_schema is not None, 'override db_schema first..'
+        if self.db_schema is None:
+            err = 'subclasses should override db_schema first..'
+            raise TypeError(err)
         tmp = self.db_schema()
-        if isinstance(tmp, Document):
-            return tmp._data
         return tmp
 
     @memoized_property

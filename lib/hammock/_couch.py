@@ -6,7 +6,6 @@
 """
 import base64
 import itertools
-from collections import namedtuple
 
 import demjson
 import couchdb
@@ -15,9 +14,8 @@ from peak.util.imports import lazyModule
 from hammock.utils import AllStaticMethods
 from report import report as report
 from mongoengine import Document as mDocument
-from mongoengine import ListField, StringField, DateTimeField
-#from couchdb.mapping import
-from couchdb.mapping import Document
+from mongoengine import ListField, StringField
+
 from couchdb.client import Database as OriginalDatabase
 
 def couchdb_pager(db, view_name='_all_docs', query=None,
@@ -185,20 +183,13 @@ def update_db(db, _id, dct, schema=None):
             fieldtype = getattr(schema, x).__class__
             if fieldtype==ListField:
                 val = demjson.decode(val)
-            elif fieldtype==TextField:
+            elif fieldtype==StringField:
                 pass
             else:
                 raise Exception, 'NIY:'+str(fieldtype)
             setattr(doc, x, val)
         doc.store(db)
 setup=Server
-
-def handle_dirty_entry(_id, db_name=None):
-    """ page at / may call this handler on malformed database entries. """
-    report('dirty entry in coordinates database.. removing it (faked)', [_id])
-    db = get_db(db_name)
-    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-    #del db[_id]
 
 class Schema(object):
     """ _unpack:

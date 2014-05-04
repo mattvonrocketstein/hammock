@@ -1,8 +1,5 @@
 """ hammock.conf
 """
-import os
-
-from peak.util.imports import lazyModule
 
 from corkscrew import Settings as _Settings
 
@@ -21,7 +18,6 @@ class Settings(_Settings):
             ugh hack
         """
         super(Settings,self).__init__(*args, **kargs)
-        from corkscrew.settings import settings
         from hammock import conf
         conf.settings = self
 

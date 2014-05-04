@@ -1,11 +1,10 @@
 """ hammock.utils
 """
 
-from flask import render_template_string, redirect
-from corkscrew.util import use_local_template
+from flask import redirect
 
 from types import FunctionType
-from report import report, getReporter
+from report import getReporter
 report2 = getReporter(label=False)
 
 
@@ -19,8 +18,7 @@ def authorization_required(func):
 class memoized_property(object):
     """
     A read-only @property that is only evaluated once.
-
-    From: http://www.reddit.com/r/Python/comments/ejp25/cached_property_decorator_that_is_memory_friendly/
+    SRC: stolen from /r/Python somewhere
     """
     def __init__(self, fget, doc=None):
         self.fget = fget
@@ -33,9 +31,12 @@ class memoized_property(object):
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
 
+def is_nonprivatefunction(name, obj):
+    return (not name.startswith('_')) and is_function(obj)
+
 is_property           = lambda obj: type(obj)==property
 is_function           = lambda obj: type(obj)==FunctionType
-is_nonprivatefunction = lambda name, obj: (not name.startswith('_')) and is_function(obj)
+
 
 
 class AllStaticMethods(type):

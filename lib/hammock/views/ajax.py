@@ -6,7 +6,6 @@ import urlparse
 import traceback
 from flask import request
 
-from corkscrew import View
 from report import report as report
 
 from .db import DBView

@@ -2,15 +2,9 @@
 
     don't use settings in here! they aren't ready yet
 """
-import datetime
 
-from flask import request
-
-from corkscrew import View
 from corkscrew.auth import Login, Logout
 from corkscrew.views import Favicon
-
-from report import report as report
 
 Login._template = """
 {% extends "layout.html" %}
