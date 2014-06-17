@@ -69,6 +69,10 @@ class Editable(object):
         items.pop('id')
         items = [ [k,v] for k,v in items.items() if nonprivate_editable(k, self.db_schema)]
         for key, val in items:
+            # find overrides in request data
+            for skey, sval in self.request.args.items():
+                if skey==key:
+                    val = sval
             widget = self._get_widget(key, value=val, schema=self.db_schema)
             editable_parts.append([key, widget])
 
