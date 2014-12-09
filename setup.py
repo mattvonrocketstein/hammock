@@ -1,46 +1,37 @@
 #!/usr/bin/env python
 """ setup.py for hammock
-
-      this pattern stolen from kinbaku's setup.py
 """
+import os, sys
+from setuptools import setup
 
-import os
-from os.path import expanduser
+# make sure that finding packages works, even
+# when setup.py is invoked from outside this dir
+this_dir = os.path.dirname(os.path.abspath(__file__))
+if not os.getcwd()==this_dir:
+    os.chdir(this_dir)
 
-try:
-    from setuptools import setup, find_packages
-    have_setuptools = True
-except ImportError:
-    from distutils.core import setup
-    def find_packages():
-        return ['hammock',]
-    have_setuptools = False
+# make sure we can import the version number so that it doesn't have
+# to be changed in two places. hammock/__init__.py is also free
+# to import various requirements that haven't been installed yet
+sys.path.append(os.path.join(this_dir, 'hammock'))
+from version import __version__
+sys.path.pop()
 
-try:
-    from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    from distutils.command.build_py import build_py
+base_url = 'https://github.com/mattvonrocketstein/hammock/'
 
 setup(
-    name         ='hammock',
-    version      = '.1',
-    description  = 'stuff for couchdb+flask',
-    author       = 'mattvonrocketstein, in the gmails',
-    url          = 'one of these days',
-    license      = 'BSD License',
-    package_dir  = {'': 'lib'},
-    packages     = find_packages('lib'),
-    long_description = __doc__,
-    keywords = 'couch flask',
-    platforms = 'any',
-    zip_safe = False,
+    name         = 'hammock',
+    description  = 'building on top of corkscrew, this is stuff for flask & mongo/couch',
+    version      = __version__,
+    author       = 'mattvonrocketstein',
+    author_email = '$author@gmail',
+    url          = base_url,
+    download_url = base_url+'/tarball/0.1',
     include_package_data = True,
-    classifiers = [
-        'License :: OSI Approved :: BSD License',
-        'Intended Audience :: Developers',
-        'Development Status :: 000 - Experimental',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Operating System :: OS Independent', ],
-    cmdclass = {'build_py': build_py},
+    packages     = ['hammock'],
+    keywords     = ['flask'],
+    entry_points = \
+    { 'console_scripts': \
+      ['hammock = hammock.bin._hammock:entry', ]
+      },
 )

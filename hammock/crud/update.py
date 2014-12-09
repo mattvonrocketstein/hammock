@@ -26,6 +26,7 @@ TYPE_MAP.update({ type('') : 'widgets/string_type.html',
                   type(u'') : 'widgets/string_type.html',
                   type(tuple()) : 'widgets/tuple_type.html',
                   type([]) : 'widgets/tuple_type.html',
+                  type(None): 'widgets/none_type.html'
                   })
 
 class Editable(object):
@@ -109,11 +110,10 @@ class Editable(object):
         """ get a (blank) template for editing this key from the
             database schema, failing that return the default
         """
-
         from_schema_definition = schema._render.get(key, None)
         from_best_guess = TYPE_MAP[type(getattr(schema,key))]
         if from_schema_definition:
-            out=from_schema_definition
+            out = from_schema_definition
         else:
             out = self.resolve_template_from_string(from_best_guess)[0]
         return Template(out)
